@@ -10,13 +10,12 @@ public class WorkoutConfiguration : IEntityTypeConfiguration<Workout>
     {
         builder.HasKey(w => w.Id);
         builder.Property(w => w.Status).HasConversion<string>();
-        builder.Navigation("_exercises").UsePropertyAccessMode(PropertyAccessMode.Field);
 
-        builder.OwnsMany<ExercisePerformed>("_exercises", eb =>
+        builder.OwnsMany(w => w.Exercises, eb =>
         {
             eb.WithOwner().HasForeignKey("WorkoutId");
-
             eb.OwnsMany(e => e.Sets);
         });
+        builder.Navigation(w => w.Exercises).UsePropertyAccessMode(PropertyAccessMode.Field);
     }
 }

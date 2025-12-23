@@ -1,4 +1,7 @@
 using Infrastructure;
+using Infrastructure.Persistence;
+using Infrastructure.Persistence.Seed;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +17,15 @@ if (string.IsNullOrEmpty(connectionString))
 builder.Services.AddInfrastructure(connectionString);
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider
+                       .GetRequiredService<GymTrackerDbContext>();
+
+    await context.Database.MigrateAsync();
+    await DatabaseSeeder.SeedAsync(context);
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

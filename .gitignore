@@ -3,6 +3,35 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Build outputs
+bin/
+obj/
+
+# Local DBs (e.g., SQLite)
+*.db
+*.sqlite
+*.db-journal
+*.db-shm
+*.db-wal
+
+# Local configuration / secrets
+appsettings.Development.json
+secrets.json
+secrets.*.json
+
+# IDE files
+.idea/
+*.iml
+
+# Logs and temporary files
+*.log
+*.tmp
+
 # User-specific files
 *.rsuser
 *.suo
@@ -361,4 +390,3 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
-*.db
