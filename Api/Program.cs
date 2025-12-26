@@ -1,3 +1,4 @@
+using Application;
 using Infrastructure;
 using Infrastructure.Persistence;
 using Infrastructure.Persistence.Seed;
@@ -15,6 +16,7 @@ if (string.IsNullOrEmpty(connectionString))
     throw new InvalidOperationException("Connection string 'DefaulConnection' is not configured.");
 }
 builder.Services.AddInfrastructure(connectionString);
+builder.Services.AddApplication();
 
 var app = builder.Build();
 

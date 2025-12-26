@@ -1,7 +1,4 @@
 ﻿using Domain.Common;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Domain.Workouts;
 
@@ -9,15 +6,15 @@ public class Workout : AggregateRoot
 {
     public readonly List<ExercisePerformed> _exercises = new();
     public Guid UserId { get; private set; }
-    public DateOnly DateTime { get; private set; }
+    public DateTime Date { get; private set; }
     public WorkoutStatus Status { get; private set; }
     public IReadOnlyCollection<ExercisePerformed> Exercises => _exercises;
 
     private Workout() { }
-    public Workout(Guid userId, DateOnly dateTime)
+    public Workout(Guid userId, DateTime date)
     {
         UserId = userId;
-        DateTime =  dateTime;
+        Date =  date;
         Status = WorkoutStatus.Planned;
     }
 
@@ -29,7 +26,7 @@ public class Workout : AggregateRoot
         _exercises.Add(new ExercisePerformed(exercise.ExerciseId));
     }
 
-    public float ClaculateTotalVolume()
+    public float CalculateTotalVolume()
     {
         return Exercises.Sum(e => e.CalculateVolume());
     }

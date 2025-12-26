@@ -1,4 +1,6 @@
-﻿using Infrastructure.Persistence;
+﻿using Application.Common.Interfaces;
+using Infrastructure.Persistence;
+using Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -11,6 +13,8 @@ public static class DependencyInjection
     {
         services.AddDbContext<GymTrackerDbContext>(options =>
             options.UseSqlite(connectionString));
+
+        services.AddScoped<IWorkoutRepository, WorkoutRepository>();
 
         return services;
     }
