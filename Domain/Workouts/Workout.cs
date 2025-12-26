@@ -38,4 +38,9 @@ public class Workout : AggregateRoot
 
         Status = WorkoutStatus.Completed;
     }
+
+    public bool IsCompleted()
+    {
+       return Status == WorkoutStatus.Completed;
+    }
 }

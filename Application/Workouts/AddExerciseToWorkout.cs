@@ -1,4 +1,5 @@
 ﻿using Application.Common.Interfaces;
+using Application.Exceptions;
 using Domain.Workouts;
 
 namespace Application.Workouts;
@@ -12,7 +13,10 @@ public class AddExerciseToWorkoutHandler(IWorkoutRepository workoutRepository)
 
     public async Task<AddExerciseToWorkoutResult> HandleAsync(AddExerciseToWorkoutCommand command)
     {
-        var workout = await _workoutRepo.GetByIdAsync(command.WorkoutId) ?? throw new ArgumentException("Workout not found.");
+        var workout = await _workoutRepo.GetByIdAsync(command.WorkoutId) ?? throw new NotFoundException("Workout not found.");
+        if (workout.IsCompleted())
+            throw new DomainRuleViolationException("Cannot add exercise to a completed workout");
+
         var exercisePerformed = new ExercisePerformed(command.ExerciseId);
 
         foreach (var setDto in command.Sets)

@@ -1,4 +1,5 @@
 ﻿using Application.Common.Interfaces;
+using Application.Exceptions;
 
 namespace Application.Workouts;
 
@@ -11,10 +12,14 @@ public class CompleteWorkoutHandler(IWorkoutRepository workoutRepository)
 
     public async Task<CompleteWorkoutResult> HandleAsync(CompleteWorkoutCommand command)
     {
-        var workout = await _workoutRepository.GetByIdAsync(command.WorkoutId) ?? throw new ArgumentException("Workout not found.");
+        var workout = await _workoutRepository.GetByIdAsync(command.WorkoutId) ?? throw new NotFoundException("Workout not found");
+
+        if (workout.Exercises.Count == 0)
+            throw new DomainRuleViolationException("Workout cannot be completed without exercises");
+
         workout.Complete();
 
         await _workoutRepository.SaveChangesAsync();
-        return new CompleteWorkoutResult(workout.Id, workout.Date);
+        return new CompleteWorkoutResult(workout.Id, DateTime.UtcNow);
     }
 }

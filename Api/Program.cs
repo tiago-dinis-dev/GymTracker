@@ -1,3 +1,4 @@
+using Api.Middleware;
 using Application;
 using Infrastructure;
 using Infrastructure.Persistence;
@@ -34,6 +35,8 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseHttpsRedirection();
 

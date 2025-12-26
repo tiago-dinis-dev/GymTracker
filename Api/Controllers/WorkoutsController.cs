@@ -1,4 +1,5 @@
 ﻿using Api.Workouts;
+using Application.Dtos;
 using Application.Workouts;
 using Microsoft.AspNetCore.Mvc;
 
@@ -6,39 +7,52 @@ namespace Api.Controllers
 {
     [Route("api/workouts")]
     [ApiController]
-    public class WorkoutsController(CreateWorkoutHandler createWorkoutHandler, AddExerciseToWorkoutHandler addExerciseToWorkoutHandler) : ControllerBase
+    public class WorkoutsController(CreateWorkoutHandler createWorkoutHandler, AddExerciseToWorkoutHandler addExerciseToWorkoutHandler,
+        CompleteWorkoutHandler completeWorkoutHandler, GetWorkoutHistoryHandler getWorkoutHistoryHandler, GetWorkoutByIdHandler getWorkoutByIdHandler) : ControllerBase
     {
         private readonly CreateWorkoutHandler _createWorkoutHandler = createWorkoutHandler;
         private readonly AddExerciseToWorkoutHandler _addExerciseToWorkoutHandler = addExerciseToWorkoutHandler;
+        private readonly CompleteWorkoutHandler _completeWorkoutHandler = completeWorkoutHandler;
+        private readonly GetWorkoutHistoryHandler _getWorkoutHistoryHandler = getWorkoutHistoryHandler;
+        private readonly GetWorkoutByIdHandler _getWorkoutByIdHandler = getWorkoutByIdHandler;
 
-        // GET: api/<WorkoutController>
-        [HttpGet]
-        public IEnumerable<string> Get()
+        #region GET
+
+        [HttpGet("history")]
+        public async Task<ActionResult<List<WorkoutSummaryDto>>> GetWorkoutHistory(Guid userId)
         {
-            return new string[] { "value1", "value2" };
+            var result = await _getWorkoutHistoryHandler.HandleAsync(new GetWorkoutHistoryQuery(userId));
+
+            return Ok(result);
         }
 
-        // GET api/<WorkoutController>/5
         [HttpGet("{id}")]
-        public string GetWorkoutById(Guid workoutId)
+        public async Task<IActionResult> GetWorkoutById(Guid workoutId)
         {
-            return "value";
+            var workout = _getWorkoutByIdHandler.HandleAsync(new GetWorkoutByIdQuery(workoutId));
+            if(workout == null)
+                return NotFound();
+
+            return Ok();
         }
 
-        // POST api/<WorkoutController>
+        #endregion
+
+        #region POST
+
+        [HttpPost("{workoutId}/complete")]
+        public async Task<ActionResult> CompleteWorkout(Guid workoutId)
+        {
+            await _completeWorkoutHandler.HandleAsync(new CompleteWorkoutCommand(workoutId));
+
+            return NoContent();
+        }
+
         [HttpPost]
         public async Task<IActionResult> PostWorkout([FromBody] DateTime date)
         {
-            CreateWorkoutResult result;
             var command = new CreateWorkoutCommand(Guid.NewGuid(), date);
-
-            try { 
-                result = await _createWorkoutHandler.HandleAsync(command);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var result = await _createWorkoutHandler.HandleAsync(command);
 
             return CreatedAtAction(
                 nameof(GetWorkoutById),
@@ -50,20 +64,14 @@ namespace Api.Controllers
         [HttpPost("{workoutId}/exercises")]
         public async Task<IActionResult> PostExercise(Guid workoutId, AddExerciseRequest request)
         {
-            AddExerciseToWorkoutResult result;
             var command = new AddExerciseToWorkoutCommand(workoutId, request.ExerciseId, [.. request.Sets.Select(s => new Domain.Workouts.SetRecord(s.Reps, s.Weight))]);
 
-            try
-            {
-                result = await _addExerciseToWorkoutHandler.HandleAsync(command);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var result = await _addExerciseToWorkoutHandler.HandleAsync(command);
 
             return Ok();
         }
+
+        #endregion
 
         // PUT api/<WorkoutController>/5
         [HttpPut("{id}")]

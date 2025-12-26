@@ -1,6 +1,6 @@
 ﻿using Domain.Workouts;
 
-namespace Api.Workouts;
+namespace Application.Dtos;
 
 public record WorkoutSummaryDto
 {
