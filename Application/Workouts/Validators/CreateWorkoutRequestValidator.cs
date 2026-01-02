@@ -1,6 +1,7 @@
-﻿using FluentValidation;
+﻿using Common.Workouts;
+using FluentValidation;
 
-namespace Api.Workouts.Validators;
+namespace Application.Workouts.Validators;
 
 public class CreateWorkoutRequestValidator : AbstractValidator<CreateWorkoutRequest>
 {

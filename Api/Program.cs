@@ -1,5 +1,4 @@
 using Api.Middleware;
-using Api.Workouts.Validators;
 using Application;
 using Infrastructure;
 using Infrastructure.Persistence;
@@ -8,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using FluentValidation;
 using Infrastructure.Caching;
 using Application.Common.Caching;
+using Application.Workouts.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,17 +16,29 @@ builder.Services.AddControllers();
 builder.Services.AddValidatorsFromAssemblyContaining<CreateWorkoutRequestValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<AddExerciseRequestValidator>();
 
-builder.Services.AddOpenApi();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
-var connectionString = builder.Configuration.GetConnectionString("DefaulConnection");
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 if (string.IsNullOrEmpty(connectionString))
 {
-    throw new InvalidOperationException("Connection string 'DefaulConnection' is not configured.");
+    throw new InvalidOperationException("Connection string 'DefaultConnection' is not configured.");
 }
+
 builder.Services.AddInfrastructure(connectionString);
 builder.Services.AddMemoryCache();
 builder.Services.AddSingleton<ICacheService, MemoryCacheService>(); 
 builder.Services.AddApplication();
+
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
 
 var app = builder.Build();
 
@@ -42,7 +54,8 @@ using (var scope = app.Services.CreateScope())
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
@@ -50,6 +63,8 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+
+app.UseCors();
 
 app.MapControllers();
 

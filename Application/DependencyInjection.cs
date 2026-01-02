@@ -11,6 +11,7 @@ public static class DependencyInjection
         services.AddScoped<CreateWorkoutHandler>();
         services.AddScoped<CompleteWorkoutHandler>();
         services.AddScoped<GetWorkoutHistoryHandler>();
+        services.AddScoped<GetWorkoutByIdHandler>();
 
         return services;
     }

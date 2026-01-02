@@ -1,5 +1,5 @@
-﻿using Api.Workouts;
-using Application.Workouts;
+﻿using Application.Workouts;
+using Common.Workouts;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;

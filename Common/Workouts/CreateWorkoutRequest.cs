@@ -1,4 +1,4 @@
-﻿namespace Api.Workouts;
+﻿namespace Common.Workouts;
 
 public record CreateWorkoutRequest
 {

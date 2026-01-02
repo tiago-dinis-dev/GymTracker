@@ -1,5 +1,5 @@
-﻿using Api.Workouts;
-using Application.Workouts;
+﻿using Application.Workouts;
+using Common.Workouts;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
@@ -45,7 +45,7 @@ public class WorkoutsController(CreateWorkoutHandler createWorkoutHandler,
 
         return CreatedAtAction(
             nameof(GetWorkoutById),
-            new { id = result.WorkoutId },
+            new { workoutId = result.WorkoutId },
             new CreateWorkoutResponse(result.WorkoutId)
         );
     }
