@@ -8,9 +8,16 @@ public class ExerciseConfiguration : IEntityTypeConfiguration<Exercise>
 {
     public void Configure(EntityTypeBuilder<Exercise> builder)
     {
+        builder.ToTable("Exercises");
+
         builder.HasKey(x => x.Id);
-        builder.HasIndex(x => x.Name)
-               .IsUnique();
-        builder.Property(x => x.MuscleGroup).HasConversion<string>();
+        builder.Property(x => x.Name)
+            .IsRequired()
+            .HasMaxLength(100);
+
+        builder.Property(x => x.MuscleGroup)
+            .IsRequired()
+            .HasMaxLength(50)
+            .HasConversion<string>();
     }
 }

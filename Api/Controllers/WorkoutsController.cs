@@ -1,4 +1,6 @@
-﻿using Application.Workouts;
+﻿using Api.Services;
+using Application.Workouts;
+using Common.Services;
 using Common.Workouts;
 using Microsoft.AspNetCore.Mvc;
 
@@ -40,13 +42,13 @@ public class WorkoutsController(CreateWorkoutHandler createWorkoutHandler,
     [HttpPost]
     public async Task<IActionResult> PostWorkout([FromBody] DateTime date)
     {
-        var command = new CreateWorkoutCommand(Guid.NewGuid(), date);
+        var command = new CreateWorkoutCommand(date);
         var result = await _createWorkoutHandler.HandleAsync(command);
 
         return CreatedAtAction(
             nameof(GetWorkoutById),
-            new { workoutId = result.WorkoutId },
-            new CreateWorkoutResponse(result.WorkoutId)
+            new { workoutId = result },
+            new CreateWorkoutResponse(result)
         );
     }
 

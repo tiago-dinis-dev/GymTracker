@@ -8,6 +8,8 @@ using FluentValidation;
 using Infrastructure.Caching;
 using Application.Common.Caching;
 using Application.Workouts.Validators;
+using Common.Services;
+using Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +31,9 @@ builder.Services.AddInfrastructure(connectionString);
 builder.Services.AddMemoryCache();
 builder.Services.AddSingleton<ICacheService, MemoryCacheService>(); 
 builder.Services.AddApplication();
+
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IUserContextService, UserContextService>();
 
 builder.Services.AddCors(options =>
 {

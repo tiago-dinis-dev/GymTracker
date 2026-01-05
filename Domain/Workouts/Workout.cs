@@ -18,12 +18,33 @@ public class Workout : AggregateRoot
         Status = WorkoutStatus.Planned;
     }
 
-    public void AddExercise(ExercisePerformed exercise)
+    public void AddExercise(Guid exerciseId, IEnumerable<SetRecord> sets)
     {
-        if (Status == WorkoutStatus.Completed)
-            throw new InvalidOperationException("Cannot add exercises to a workout that is completed.");
+        EnsureWorkoutIsNotCompleted();
 
-        _exercises.Add(new ExercisePerformed(exercise.ExerciseId));
+        if (_exercises.Any(e => e.ExerciseId == exerciseId))
+        {
+            throw new InvalidOperationException("Exercise already exists.");
+        }
+
+        var exercise = new ExercisePerformed(exerciseId);
+
+        foreach(var set in sets)
+        {
+            exercise.AddSet(set.Reps, set.Weight);
+        }
+
+        _exercises.Add(exercise);
+    }
+
+    public void AddSet(Guid exerciseId, int reps, float weight)
+    {
+        EnsureWorkoutIsNotCompleted();
+
+        var exercise = _exercises.FirstOrDefault(x => x.ExerciseId == exerciseId)
+            ?? throw new InvalidOperationException("Exercise not found in workout");
+
+        exercise.AddSet(reps, weight);
     }
 
     public float CalculateTotalVolume()
@@ -39,8 +60,9 @@ public class Workout : AggregateRoot
         Status = WorkoutStatus.Completed;
     }
 
-    public bool IsCompleted()
+    private void EnsureWorkoutIsNotCompleted()
     {
-       return Status == WorkoutStatus.Completed;
+        if (Status == WorkoutStatus.Completed)
+            throw new InvalidOperationException("Workout is already completed.");
     }
 }

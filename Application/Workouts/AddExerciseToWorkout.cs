@@ -8,27 +8,26 @@ namespace Application.Workouts;
 public record AddExerciseToWorkoutCommand(Guid WorkoutId, Guid ExerciseId, List<SetRecord> Sets);
 public record AddExerciseToWorkoutResult(Guid WorkoutId);
 
-public class AddExerciseToWorkoutHandler(IWorkoutRepository workoutRepository, ICacheService cacheService)
+public class AddExerciseToWorkoutHandler(IWorkoutRepository workoutRepository, ICacheService cacheService, IUserContextService userContextService)
 {
     private readonly IWorkoutRepository _workoutRepo = workoutRepository;
     private readonly ICacheService _cache = cacheService;
+    private readonly IUserContextService _userContext = userContextService;
 
     public async Task<AddExerciseToWorkoutResult> HandleAsync(AddExerciseToWorkoutCommand command)
     {
+        var userId = _userContext.GetUserId();
+
         var workout = await _workoutRepo.GetByIdAsync(command.WorkoutId) ?? throw new NotFoundException("Workout not found.");
-        if (workout.IsCompleted())
-            throw new DomainRuleViolationException("Cannot add exercise to a completed workout");
 
-        var exercisePerformed = new ExercisePerformed(command.ExerciseId);
-
-        foreach (var setDto in command.Sets)
+        if (workout.UserId != userId)
         {
-            exercisePerformed.AddSet(setDto.Reps, setDto.Weight);
+            throw new DomainRuleViolationException("Workout does not belong to user.");
         }
 
-        workout.AddExercise(exercisePerformed);
+        workout.AddExercise(command.ExerciseId, command.Sets);
 
-        await _cache.RemoveAsync(CacheKeys.WorkoutHistory(workout.UserId));
+        await _cache.RemoveAsync(CacheKeys.WorkoutHistory(userId));
         await _cache.RemoveAsync(CacheKeys.WorkoutDetails(workout.Id));
 
         await _workoutRepo.SaveChangesAsync();

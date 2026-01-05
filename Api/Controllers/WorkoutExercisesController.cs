@@ -11,7 +11,7 @@ public class WorkoutExercisesController(AddExerciseToWorkoutHandler addExerciseT
     private readonly AddExerciseToWorkoutHandler _addExerciseToWorkoutHandler = addExerciseToWorkoutHandler;
 
     [HttpPost("{workoutId}")]
-    public async Task<IActionResult> PostExercise(Guid workoutId, AddExerciseRequest request)
+    public async Task<IActionResult> PostExercise(Guid workoutId, [FromBody] AddExerciseRequest request)
     {
         var command = new AddExerciseToWorkoutCommand(workoutId, request.ExerciseId, [.. request.Sets.Select(s => new Domain.Workouts.SetRecord(s.Reps, s.Weight))]);
 

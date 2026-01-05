@@ -1,4 +1,5 @@
 ﻿using Domain.Exercises;
+using Domain.Users;
 using Domain.Workouts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -13,6 +14,11 @@ public class WorkoutConfiguration : IEntityTypeConfiguration<Workout>
         builder.HasKey(w => w.Id);
 
         builder.Property(w => w.UserId).IsRequired();
+        builder.HasOne<User>()
+           .WithMany()
+           .HasForeignKey(w => w.UserId)
+           .OnDelete(DeleteBehavior.Restrict);
+
         builder.Property(w => w.Status).HasConversion<string>();
 
         builder.OwnsMany(w => w.Exercises, eb =>

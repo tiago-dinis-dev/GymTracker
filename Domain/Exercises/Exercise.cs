@@ -11,6 +11,7 @@ public class Exercise : AggregateRoot
 
     public Exercise(string name, MuscleGroup muscleGroup)
     {
+        Id = Guid.NewGuid();
         Name = name;
         MuscleGroup = muscleGroup;
     }

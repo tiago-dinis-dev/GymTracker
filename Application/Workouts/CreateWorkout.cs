@@ -4,30 +4,30 @@ using Domain.Workouts;
 
 namespace Application.Workouts;
 
-public record CreateWorkoutCommand(Guid UserId, DateTime Date);
+public record CreateWorkoutCommand(DateTime Date);
 
-public record CreateWorkoutResult(Guid WorkoutId);
-
-public class CreateWorkoutHandler(IWorkoutRepository workoutRepository, ICacheService cacheService)
+public class CreateWorkoutHandler(IWorkoutRepository workoutRepository, ICacheService cacheService, IUserContextService userContextService)
 {
     private readonly IWorkoutRepository _workoutRepo = workoutRepository;
     private readonly ICacheService _cache = cacheService;
 
-    public async Task<CreateWorkoutResult> HandleAsync(CreateWorkoutCommand command)
+    public async Task<Guid> HandleAsync(CreateWorkoutCommand command)
     {
+        var userId = userContextService.GetUserId();
+
         if (command.Date > DateTime.UtcNow)
         {
             throw new ArgumentException("Workout date cannot be in the future.");
         }
 
-        var workout = new Workout(command.UserId, command.Date);
+        var workout = new Workout(userId, command.Date);
 
         await _workoutRepo.AddAsync(workout);
 
-        await _cache.RemoveAsync(CacheKeys.WorkoutHistory(workout.UserId));
+        await _cache.RemoveAsync(CacheKeys.WorkoutHistory(userId));
 
         await _workoutRepo.SaveChangesAsync();
 
-        return new CreateWorkoutResult(workout.Id);
+        return workout.Id;
     }
 }

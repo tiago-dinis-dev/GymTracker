@@ -11,11 +11,10 @@ public class WorkoutHistoryController(GetWorkoutHistoryHandler getWorkoutHistory
     private readonly GetWorkoutHistoryHandler _getWorkoutHistoryHandler = getWorkoutHistoryHandler;
 
     [HttpGet]
-    public async Task<ActionResult<List<WorkoutSummaryDto>>> GetWorkoutHistory(Guid userId)
+    public async Task<ActionResult<List<WorkoutSummaryDto>>> GetWorkoutHistory()
     {
-        var result = await _getWorkoutHistoryHandler.HandleAsync(new GetWorkoutHistoryQuery(userId));
+        var result = await _getWorkoutHistoryHandler.HandleAsync();
 
         return Ok(result);
     }
-
 }

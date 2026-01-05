@@ -1,38 +1,30 @@
 ﻿using Domain.Common;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Domain.Users;
 
 public class User : AggregateRoot
 {
     public string Name { get; private set; }
-    public float HeightCm { get; private set; }
-    public float WeightKg { get; private set; }
+    public string Email { get; private set; }
+    public float? Weight { get; private set; }
+    public float? Height { get; private set; }
 
     private User() { }
 
-    public User(string name, float heightCm, float weightKg)
+    public User(string name, string email, float? weight = null, float? height = null)
     {
         Name = name;
-        HeightCm = heightCm;
-        WeightKg = weightKg;
+        Email = email;
+        Weight = weight;
+        Height = height;
     }
 
-    public void UpdateWeight(float newWeightKg)
+    public void UpdateProfile(string? name = null, string? email = null, float? weight = null, float? height = null)
     {
-        if (newWeightKg <= 0)
-        {
-            throw new ArgumentException("Weight must be greater than zero.", nameof(newWeightKg));
-        }
-
-        WeightKg = newWeightKg;
-    }
-
-    public float CalculateBMI()
-    {
-        float heightM = HeightCm / 100;
-        return WeightKg / (heightM * heightM);
+        if (!string.IsNullOrWhiteSpace(name)) Name = name;
+        if (!string.IsNullOrWhiteSpace(email)) Email = email;
+        if (weight.HasValue) Weight = weight.Value;
+        if (height.HasValue) Height = height.Value;
     }
 }
+
