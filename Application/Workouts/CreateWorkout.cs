@@ -11,7 +11,7 @@ public class CreateWorkoutHandler(IWorkoutRepository workoutRepository, ICacheSe
     private readonly IWorkoutRepository _workoutRepo = workoutRepository;
     private readonly ICacheService _cache = cacheService;
 
-    public async Task<Guid> HandleAsync(CreateWorkoutCommand command)
+    public async Task<Guid> HandleAsync(CreateWorkoutCommand command, CancellationToken ct)
     {
         var userId = userContextService.GetUserId();
 
@@ -26,7 +26,7 @@ public class CreateWorkoutHandler(IWorkoutRepository workoutRepository, ICacheSe
 
         await _cache.RemoveAsync(CacheKeys.WorkoutHistory(userId));
 
-        await _workoutRepo.SaveChangesAsync();
+        await _workoutRepo.SaveChangesAsync(ct);
 
         return workout.Id;
     }

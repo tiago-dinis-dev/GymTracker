@@ -23,6 +23,6 @@ public class UpdateUserHandler(IUserRepository userRepository, ICacheService cac
         user.UpdateProfile(command.Name, command.Email, command.Weight, command.Height);
 
         await _userRepo.SaveChangesAsync();
-        await _cacheService.RemoveAsync(CacheKeys.User(user.Id));
+        await _cacheService.RemoveAsync(CacheKeys.User(user.Email));
     }
 }

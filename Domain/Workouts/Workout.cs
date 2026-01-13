@@ -1,10 +1,11 @@
 ﻿using Domain.Common;
+using Domain.Common.Events;
 
 namespace Domain.Workouts;
 
 public class Workout : AggregateRoot
 {
-    public readonly List<ExercisePerformed> _exercises = new();
+    private readonly List<ExercisePerformed> _exercises = new();
     public Guid UserId { get; private set; }
     public DateTime Date { get; private set; }
     public WorkoutStatus Status { get; private set; }
@@ -54,10 +55,15 @@ public class Workout : AggregateRoot
 
     public void Complete()
     {
+        if (Status == WorkoutStatus.Completed)
+            return;
+
         if (_exercises.Count == 0)
             throw new InvalidOperationException("Cannot complete a workout with no exercises.");
 
         Status = WorkoutStatus.Completed;
+
+        RaiseEvent(new WorkoutCompleted(Id, UserId));
     }
 
     private void EnsureWorkoutIsNotCompleted()

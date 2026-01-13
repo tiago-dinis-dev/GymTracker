@@ -6,5 +6,5 @@ public static class CacheKeys
 
     public static string WorkoutDetails(Guid workoutId) => $"workouts:details:{workoutId}";
 
-    public static string User(Guid userId) => $"users:list:{userId}";
+    public static string User(string email) => $"users:details:{email}";
 }

@@ -1,5 +1,5 @@
-﻿using Application.Common.Caching;
-using Application.Common.Interfaces;
+﻿using Application.Common.Interfaces;
+using Application.Dtos;
 using Application.Exceptions;
 using Domain.Users;
 
@@ -12,23 +12,33 @@ public record CreateUserResult(Guid UserId);
 public class CreateUserHandler(IUserRepository userRepository)
 {
     private readonly IUserRepository _userRepo = userRepository;
-    public async Task<CreateUserResult> HandleAsync(CreateUserCommand command)
+    public async Task<UserDto?> HandleAsync(CreateUserCommand command)
     {
-        await EnsureUserDoesNotExist(command.Email);
+        var user = new User(Guid.NewGuid(), command.Name, command.Email, command.Weight, command.Height);
 
-        var user = new User(command.Name, command.Email, command.Weight, command.Height);
+        await EnsureUserDoesNotExist(user.UserId);
+
         await _userRepo.AddAsync(user);
         await _userRepo.SaveChangesAsync();
 
-        return new CreateUserResult(user.Id);
+        var dto = new UserDto
+        {
+            UserId = user.UserId,
+            Name = user.Name,
+            Email = user.Email,
+            Weight = user.Weight,
+            Height = user.Height
+        };
+
+        return dto;
     }
 
-    private async Task EnsureUserDoesNotExist(string email)
+    private async Task EnsureUserDoesNotExist(Guid userId)
     {
-        var existingUser = await _userRepo.GetByEmailAsync(email);
+        var existingUser = await _userRepo.GetByIdAsync(userId);
         if (existingUser != null)
         {
-            throw new DomainRuleViolationException("Email already registered.");
+            throw new DomainRuleViolationException("User with this ID already exists.");
         }
     }
 }

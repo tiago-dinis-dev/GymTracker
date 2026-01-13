@@ -1,15 +1,18 @@
 using Api.Middleware;
+using Api.Services;
 using Application;
+using Application.Common.Caching;
+using Application.Common.Interfaces;
+using Application.Workouts.Validators;
+using FluentValidation;
 using Infrastructure;
+using Infrastructure.Caching;
 using Infrastructure.Persistence;
 using Infrastructure.Persistence.Seed;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using FluentValidation;
-using Infrastructure.Caching;
-using Application.Common.Caching;
-using Application.Workouts.Validators;
-using Common.Services;
-using Api.Services;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,6 +37,22 @@ builder.Services.AddApplication();
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IUserContextService, UserContextService>();
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+        };
+    });
 
 builder.Services.AddCors(options =>
 {
@@ -67,6 +86,7 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.UseCors();

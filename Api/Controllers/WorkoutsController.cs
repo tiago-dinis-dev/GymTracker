@@ -1,12 +1,12 @@
-﻿using Api.Services;
-using Application.Workouts;
-using Common.Services;
+﻿using Application.Workouts;
 using Common.Workouts;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
 
 [Route("api/workouts")]
+[Authorize]
 [ApiController]
 public class WorkoutsController(CreateWorkoutHandler createWorkoutHandler,
     CompleteWorkoutHandler completeWorkoutHandler, GetWorkoutByIdHandler getWorkoutByIdHandler) : ControllerBase
@@ -20,11 +20,11 @@ public class WorkoutsController(CreateWorkoutHandler createWorkoutHandler,
     [HttpGet("{workoutId}")]
     public async Task<IActionResult> GetWorkoutById(Guid workoutId)
     {
-        var workout = _getWorkoutByIdHandler.HandleAsync(new GetWorkoutByIdQuery(workoutId));
+        var workout = await _getWorkoutByIdHandler.HandleAsync(new GetWorkoutByIdQuery(workoutId));
         if(workout == null)
             return NotFound();
 
-        return Ok();
+        return Ok(workout);
     }
 
     #endregion
@@ -32,18 +32,18 @@ public class WorkoutsController(CreateWorkoutHandler createWorkoutHandler,
     #region POST
 
     [HttpPost("{workoutId}/complete")]
-    public async Task<ActionResult> CompleteWorkout(Guid workoutId)
+    public async Task<ActionResult> CompleteWorkout(Guid workoutId, CancellationToken ct)
     {
-        await _completeWorkoutHandler.HandleAsync(new CompleteWorkoutCommand(workoutId));
+        await _completeWorkoutHandler.HandleAsync(new CompleteWorkoutCommand(workoutId), ct);
 
         return NoContent();
     }
 
     [HttpPost]
-    public async Task<IActionResult> PostWorkout([FromBody] DateTime date)
+    public async Task<IActionResult> PostWorkout([FromBody] DateTime date, CancellationToken ct)
     {
         var command = new CreateWorkoutCommand(date);
-        var result = await _createWorkoutHandler.HandleAsync(command);
+        var result = await _createWorkoutHandler.HandleAsync(command, ct);
 
         return CreatedAtAction(
             nameof(GetWorkoutById),

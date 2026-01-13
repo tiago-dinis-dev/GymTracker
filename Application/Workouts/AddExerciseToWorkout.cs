@@ -14,7 +14,7 @@ public class AddExerciseToWorkoutHandler(IWorkoutRepository workoutRepository, I
     private readonly ICacheService _cache = cacheService;
     private readonly IUserContextService _userContext = userContextService;
 
-    public async Task<AddExerciseToWorkoutResult> HandleAsync(AddExerciseToWorkoutCommand command)
+    public async Task<AddExerciseToWorkoutResult> HandleAsync(AddExerciseToWorkoutCommand command, CancellationToken ct)
     {
         var userId = _userContext.GetUserId();
 
@@ -30,7 +30,7 @@ public class AddExerciseToWorkoutHandler(IWorkoutRepository workoutRepository, I
         await _cache.RemoveAsync(CacheKeys.WorkoutHistory(userId));
         await _cache.RemoveAsync(CacheKeys.WorkoutDetails(workout.Id));
 
-        await _workoutRepo.SaveChangesAsync();
+        await _workoutRepo.SaveChangesAsync(ct);
 
         return new AddExerciseToWorkoutResult(workout.Id);
     }

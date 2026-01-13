@@ -5,25 +5,25 @@ using Application.Exceptions;
 
 namespace Application.Users;
 
-public record GetUserByIdQuery(Guid UserId);
+public record GetUserByEmailQuery(string Email);
 
-public class GetUserByIdHandler(IUserRepository userRepository, ICacheService cacheService)
+public class GetUserByEmailHandler(IUserRepository userRepository, ICacheService cacheService)
 {
     private readonly IUserRepository _userRepo = userRepository;
     private readonly ICacheService _cache = cacheService;
 
-    public async Task<UserDto?> HandleAsync(GetUserByIdQuery query)
+    public async Task<UserDto?> HandleAsync(GetUserByEmailQuery query)
     {
-        var cacheKey = CacheKeys.User(query.UserId);
+        var cacheKey = CacheKeys.User(query.Email);
         var cached = await _cache.GetAsync<UserDto>(cacheKey);
         if (cached != null)
             return cached;
 
-        var user = await _userRepo.GetByIdAsync(query.UserId) ?? throw new NotFoundException("User not found.");
+        var user = await _userRepo.GetByEmailAsync(query.Email) ?? throw new NotFoundException("User not found.");
 
         var dto = new UserDto
         {
-            Id = user.Id,
+            UserId = user.UserId,
             Name = user.Name,
             Email = user.Email,
             Weight = user.Weight,

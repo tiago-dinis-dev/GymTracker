@@ -25,8 +25,15 @@ public class WorkoutRepository(GymTrackerDbContext gymTrackerDbContext) : IWorko
         return await _gymTrackerDbContext.Workouts.Where(w => w.UserId == userId).OrderByDescending(w => w.Date).ToListAsync();
     }
 
-    public async Task SaveChangesAsync()
+    public async Task SaveChangesAsync(CancellationToken ct)
     {
-        await _gymTrackerDbContext.SaveChangesAsync();
+        await _gymTrackerDbContext.SaveChangesAsync(ct);
+    }
+
+    public async Task<IReadOnlyList<Workout>> GetExpiredWorkoutsAsync(DateTime cutoffUtc, CancellationToken ct = default)
+    {
+        return await _gymTrackerDbContext.Workouts
+            .Where(w => w.Status != WorkoutStatus.Completed && w.Date <= cutoffUtc)
+            .ToListAsync(ct);
     }
 }

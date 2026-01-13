@@ -4,6 +4,7 @@ namespace Domain.Users;
 
 public class User : AggregateRoot
 {
+    public Guid UserId { get; private set; }
     public string Name { get; private set; }
     public string Email { get; private set; }
     public float? Weight { get; private set; }
@@ -11,8 +12,9 @@ public class User : AggregateRoot
 
     private User() { }
 
-    public User(string name, string email, float? weight = null, float? height = null)
+    public User(Guid userId, string name, string email, float? weight = null, float? height = null)
     {
+        UserId = userId;
         Name = name;
         Email = email;
         Weight = weight;

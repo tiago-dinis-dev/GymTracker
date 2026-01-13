@@ -1,5 +1,4 @@
-﻿using Application.Common.Caching;
-using Application.Common.Interfaces;
+﻿using Application.Common.Interfaces;
 using Application.Exceptions;
 
 namespace Application.Workouts;
@@ -7,13 +6,12 @@ namespace Application.Workouts;
 public record CompleteWorkoutCommand(Guid WorkoutId);
 public record CompleteWorkoutResult(Guid WorkoutId, DateTime CompletedAt);
 
-public class CompleteWorkoutHandler(IWorkoutRepository workoutRepository, ICacheService cacheService, IUserContextService userContextService)
+public class CompleteWorkoutHandler(IWorkoutRepository workoutRepository, IUserContextService userContextService)
 {
     private readonly IWorkoutRepository _workoutRepository = workoutRepository;
-    private readonly ICacheService _cache = cacheService;
     private readonly IUserContextService _userContextService = userContextService;
 
-    public async Task<CompleteWorkoutResult> HandleAsync(CompleteWorkoutCommand command)
+    public async Task<CompleteWorkoutResult> HandleAsync(CompleteWorkoutCommand command, CancellationToken ct)
     {
         var userId = _userContextService.GetUserId();
 
@@ -28,10 +26,7 @@ public class CompleteWorkoutHandler(IWorkoutRepository workoutRepository, ICache
 
         workout.Complete();
 
-        await _cache.RemoveAsync(CacheKeys.WorkoutDetails(workout.Id));
-        await _cache.RemoveAsync(CacheKeys.WorkoutHistory(userId));
-
-        await _workoutRepository.SaveChangesAsync();
+        await _workoutRepository.SaveChangesAsync(ct);
         return new CompleteWorkoutResult(workout.Id, DateTime.UtcNow);
     }
 }

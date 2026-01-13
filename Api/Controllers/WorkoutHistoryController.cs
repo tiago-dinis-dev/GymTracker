@@ -1,10 +1,12 @@
 ﻿using Application.Dtos;
 using Application.Workouts;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/workout-history")]
 public class WorkoutHistoryController(GetWorkoutHistoryHandler getWorkoutHistoryHandler) : ControllerBase
 {
