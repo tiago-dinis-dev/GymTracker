@@ -8,11 +8,11 @@ public class ExerciseRepository(GymTrackerDbContext gymTrackerDbContext) : IExer
 {
     private readonly GymTrackerDbContext _gymTrackerDbContext = gymTrackerDbContext;
 
-    public async Task<Exercise?> GetByIdAsync(Guid id)
+    public async Task<Exercise?> GetByIdAsync(Guid exerciseId)
     {
         return await _gymTrackerDbContext.Exercises
             .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Id == id);
+            .FirstOrDefaultAsync(x => x.Id == exerciseId);
     }
 
     public async Task<List<Exercise>> GetAllAsync()

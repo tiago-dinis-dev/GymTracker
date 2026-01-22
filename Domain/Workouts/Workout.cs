@@ -36,6 +36,14 @@ public class Workout : AggregateRoot
         }
 
         _exercises.Add(exercise);
+        int orderInWorkout = _exercises.Count;
+
+        RaiseEvent(new ExerciseAddedToWorkout(
+            workoutId: Id,
+            userId: UserId,
+            exercise: exercise,
+            orderInWorkout: orderInWorkout
+        ));
     }
 
     public void AddSet(Guid exerciseId, int reps, float weight)
@@ -63,7 +71,7 @@ public class Workout : AggregateRoot
 
         Status = WorkoutStatus.Completed;
 
-        RaiseEvent(new WorkoutCompleted(Id, UserId));
+        RaiseEvent(new WorkoutCompleted(Id, UserId, Date, _exercises));
     }
 
     private void EnsureWorkoutIsNotCompleted()
