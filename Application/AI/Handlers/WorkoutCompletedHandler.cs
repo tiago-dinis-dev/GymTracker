@@ -4,9 +4,9 @@ using Domain.Common.Events;
 
 namespace Application.AI.Handlers;
 
-public sealed class WorkoutCompletedHandler(IAiObservationStore<WorkoutCompletedObservation> aiObservationStore)
+public sealed class WorkoutCompletedHandler(IAIObservationQueue aiObservationQueue)
 {
-    private readonly IAiObservationStore<WorkoutCompletedObservation> _store = aiObservationStore;
+    private readonly IAIObservationQueue _queue = aiObservationQueue;
 
     public async Task HandleAsync(WorkoutCompleted evt, CancellationToken cancellationToken)
     {
@@ -20,6 +20,6 @@ public sealed class WorkoutCompletedHandler(IAiObservationStore<WorkoutCompleted
             ExerciseCount = evt.Exercises.Count,
         };
 
-        await _store.AddAsync(observation, cancellationToken);
+        await _queue.EnqueueAsync(observation, cancellationToken);
     }
 }

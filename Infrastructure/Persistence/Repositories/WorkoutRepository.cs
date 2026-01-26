@@ -1,4 +1,4 @@
-﻿using Application.Common.Interfaces;
+﻿using Application.Common.Interfaces.Repository;
 using Domain.Workouts;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,7 +15,7 @@ public class WorkoutRepository(GymTrackerDbContext gymTrackerDbContext) : IWorko
         return Task.CompletedTask;
     }
 
-    public async Task<Workout?> GetByIdAsync(Guid workoutId)
+    public async Task<Workout?> GetWorkoutByIdAsync(Guid workoutId)
     {
         return await _gymTrackerDbContext.Workouts.FindAsync(workoutId);
     }

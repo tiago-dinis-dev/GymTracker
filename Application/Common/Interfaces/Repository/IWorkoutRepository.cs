@@ -1,12 +1,12 @@
 ﻿using Domain.Workouts;
 
-namespace Application.Common.Interfaces;
+namespace Application.Common.Interfaces.Repository;
 
 public interface IWorkoutRepository
 {
     Task AddAsync(Workout workout);
     Task SaveChangesAsync(CancellationToken ct);
-    Task<Workout?> GetByIdAsync(Guid workoutId);
+    Task<Workout?> GetWorkoutByIdAsync(Guid workoutId);
     Task<List<Workout>> GetWorkoutsByUserIdAsync(Guid userId);
     Task<IReadOnlyList<Workout>> GetExpiredWorkoutsAsync(DateTime cutoffUtc, CancellationToken ct = default);
 }

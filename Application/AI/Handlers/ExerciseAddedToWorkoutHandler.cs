@@ -1,14 +1,14 @@
 ﻿using Application.AI.Abstractions;
-using Application.Common.Interfaces;
+using Application.Common.Interfaces.Repository;
 using Application.Exceptions;
 using Common.AI.Observations;
 using Domain.Common.Events;
 
 namespace Application.AI.Handlers;
 
-public sealed class ExerciseAddedToWorkoutHandler(IAiObservationStore<ExerciseAddedObservation> aiObservationStore, IExerciseRepository exerciseRepository)
+public sealed class ExerciseAddedToWorkoutHandler(IAIObservationQueue aiObservationQueue, IExerciseRepository exerciseRepository)
 {
-    private readonly IAiObservationStore<ExerciseAddedObservation> _store = aiObservationStore;
+    private readonly IAIObservationQueue _queue = aiObservationQueue;
     private readonly IExerciseRepository _exerciseRepository = exerciseRepository;
 
     public async Task HandleAsync(ExerciseAddedToWorkout evt, CancellationToken cancellationToken)
@@ -29,6 +29,6 @@ public sealed class ExerciseAddedToWorkoutHandler(IAiObservationStore<ExerciseAd
             Timestamp = evt.OccurredAt,
         };
 
-        await _store.AddAsync(observation, cancellationToken);
+        await _queue.EnqueueAsync(observation, cancellationToken);
     }
 }

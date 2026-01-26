@@ -1,6 +1,6 @@
 ﻿using Domain.Exercises;
 
-namespace Application.Common.Interfaces;
+namespace Application.Common.Interfaces.Repository;
 
 public interface IExerciseRepository
 {

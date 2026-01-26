@@ -1,4 +1,4 @@
-﻿using Application.Common.Interfaces;
+﻿using Application.Common.Interfaces.Repository;
 using Application.Dtos;
 using Application.Exceptions;
 using Domain.Users;

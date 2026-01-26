@@ -30,7 +30,13 @@ if (string.IsNullOrEmpty(connectionString))
     throw new InvalidOperationException("Connection string 'DefaultConnection' is not configured.");
 }
 
-builder.Services.AddInfrastructure(connectionString);
+var connectionStringAI = builder.Configuration.GetConnectionString("DefaultConnectionAI");
+if (string.IsNullOrEmpty(connectionStringAI))
+{
+    throw new InvalidOperationException("Connection string 'DefaultConnectionAI' is not configured.");
+}
+
+builder.Services.AddInfrastructure(connectionString, connectionStringAI);
 builder.Services.AddMemoryCache();
 builder.Services.AddSingleton<ICacheService, MemoryCacheService>(); 
 builder.Services.AddApplication();

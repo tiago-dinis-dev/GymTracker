@@ -1,4 +1,4 @@
-﻿using Application.Common.Interfaces;
+﻿using Application.Common.Interfaces.Repository;
 using Application.Dtos;
 using Application.Exceptions;
 using Domain.Workouts;
@@ -13,7 +13,7 @@ public class GetWorkoutByIdHandler(IWorkoutRepository workoutRepository)
 
     public async Task<WorkoutDetailsDto> HandleAsync(GetWorkoutByIdQuery command)
     {
-        var workout = await _workoutRepository.GetByIdAsync(command.WorkoutId) ?? throw new NotFoundException("Workout not found.");
+        var workout = await _workoutRepository.GetWorkoutByIdAsync(command.WorkoutId) ?? throw new NotFoundException("Workout not found.");
         return MapToDto(workout);
     }
 

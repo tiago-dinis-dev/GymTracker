@@ -4,14 +4,9 @@ using Microsoft.Extensions.Hosting;
 
 namespace Infrastructure.BackgroundJobs;
 
-public class WorkoutAutoCompletionService : BackgroundService
+public class WorkoutAutoCompletionService(IServiceScopeFactory scopeFactory) : BackgroundService
 {
-    private readonly IServiceScopeFactory _scopeFactory;
-
-    public WorkoutAutoCompletionService(IServiceScopeFactory scopeFactory)
-    {
-        _scopeFactory = scopeFactory;
-    }
+    private readonly IServiceScopeFactory _scopeFactory = scopeFactory;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {

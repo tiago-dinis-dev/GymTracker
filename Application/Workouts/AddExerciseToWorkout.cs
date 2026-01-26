@@ -1,5 +1,6 @@
 ﻿using Application.Common.Caching;
 using Application.Common.Interfaces;
+using Application.Common.Interfaces.Repository;
 using Application.Exceptions;
 using Domain.Workouts;
 
@@ -18,7 +19,7 @@ public class AddExerciseToWorkoutHandler(IWorkoutRepository workoutRepository, I
     {
         var userId = _userContext.GetUserId();
 
-        var workout = await _workoutRepo.GetByIdAsync(command.WorkoutId) ?? throw new NotFoundException("Workout not found.");
+        var workout = await _workoutRepo.GetWorkoutByIdAsync(command.WorkoutId) ?? throw new NotFoundException("Workout not found.");
 
         if (workout.UserId != userId)
         {

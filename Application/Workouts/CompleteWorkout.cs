@@ -1,4 +1,5 @@
 ﻿using Application.Common.Interfaces;
+using Application.Common.Interfaces.Repository;
 using Application.Exceptions;
 
 namespace Application.Workouts;
@@ -15,7 +16,7 @@ public class CompleteWorkoutHandler(IWorkoutRepository workoutRepository, IUserC
     {
         var userId = _userContextService.GetUserId();
 
-        var workout = await _workoutRepository.GetByIdAsync(command.WorkoutId) ?? throw new NotFoundException("Workout not found");
+        var workout = await _workoutRepository.GetWorkoutByIdAsync(command.WorkoutId) ?? throw new NotFoundException("Workout not found");
 
         if (workout.UserId != userId)
             throw new DomainRuleViolationException("Workout does not belong to user");

@@ -1,5 +1,6 @@
 ﻿using Application.Common.Caching;
 using Application.Common.Interfaces;
+using Application.Common.Interfaces.Repository;
 using Domain.Workouts;
 
 namespace Application.Workouts;

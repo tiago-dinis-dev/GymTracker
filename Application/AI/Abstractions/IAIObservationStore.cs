@@ -1,6 +1,9 @@
-﻿namespace Application.AI.Abstractions;
+﻿using Common.AI.Observations;
 
-public interface IAiObservationStore<in T>
+namespace Application.AI.Abstractions;
+
+public interface IAIObservationStore
 {
-    Task AddAsync(T observation, CancellationToken cancellationToken);
+    Task AddAsync(WorkoutCompletedObservation observation, CancellationToken cancellationToken);
+    Task AddAsync(ExerciseAddedObservation observation, CancellationToken cancellationToken);
 }
