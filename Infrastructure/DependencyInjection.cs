@@ -31,6 +31,7 @@ public static class DependencyInjection
 
         services.AddSingleton<IWorkoutStatsStore, InMemoryWorkoutStatsStore>();
         services.AddSingleton<IExerciseStatsStore, InMemoryExerciseStatsStore>();
+        services.AddSingleton<IMuscleGroupStatsStore, InMemoryMuscleGroupStatsStore>();
         services.AddSingleton<IAIObservationQueue, InMemoryAIObservationQueue>();
 
         return services;

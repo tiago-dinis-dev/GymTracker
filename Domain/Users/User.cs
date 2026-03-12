@@ -5,8 +5,8 @@ namespace Domain.Users;
 public class User : AggregateRoot
 {
     public Guid UserId { get; private set; }
-    public string Name { get; private set; }
-    public string Email { get; private set; }
+    public string Name { get; private set; } = string.Empty;
+    public string Email { get; private set; } = string.Empty;
     public float? Weight { get; private set; }
     public float? Height { get; private set; }
 

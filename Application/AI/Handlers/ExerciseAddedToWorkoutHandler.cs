@@ -23,6 +23,7 @@ public sealed class ExerciseAddedToWorkoutHandler(IAIObservationQueue aiObservat
                 Name = exercise.Name,
                 Sets = evt.exercise.Sets,
                 MuscleGroup = exercise.MuscleGroup,
+                IntensityPercent1Rm = evt.exercise.IntensityPercent1Rm,
             },
             VolumeData = (decimal)evt.exercise.CalculateVolume(),
             OrderInWorkout = evt.orderInWorkout,

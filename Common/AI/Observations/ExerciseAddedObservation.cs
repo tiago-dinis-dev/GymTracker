@@ -20,4 +20,5 @@ public record ExerciseDetails
     public string? Name { get; init; }
     public IReadOnlyCollection<SetRecord>? Sets { get; init; }
     public MuscleGroup MuscleGroup { get; init; }
+    public decimal IntensityPercent1Rm { get; init; }
 }

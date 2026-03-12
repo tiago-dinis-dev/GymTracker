@@ -32,7 +32,7 @@ public class Workout : AggregateRoot
 
         foreach(var set in sets)
         {
-            exercise.AddSet(set.Reps, set.Weight);
+            exercise.AddSet(set.Reps, set.Weight, set.Estimated1Rm);
         }
 
         _exercises.Add(exercise);
@@ -46,14 +46,14 @@ public class Workout : AggregateRoot
         ));
     }
 
-    public void AddSet(Guid exerciseId, int reps, float weight)
+    public void AddSet(Guid exerciseId, int reps, float weight, decimal estimated1Rm)
     {
         EnsureWorkoutIsNotCompleted();
 
         var exercise = _exercises.FirstOrDefault(x => x.ExerciseId == exerciseId)
             ?? throw new InvalidOperationException("Exercise not found in workout");
 
-        exercise.AddSet(reps, weight);
+        exercise.AddSet(reps, weight, estimated1Rm);
     }
 
     public float CalculateTotalVolume()

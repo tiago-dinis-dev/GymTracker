@@ -9,12 +9,14 @@ using Microsoft.Extensions.Logging;
 namespace Infrastructure.BackgroundJobs;
 
 public class AIObservationBackgroundService(IAIObservationQueue aiObservationQueue, IAIObservationStore aIObservationStore, 
-    ILogger<AIObservationBackgroundService> logger, IWorkoutStatsStore workoutStatsStore, IExerciseStatsStore exerciseStatsStore) : BackgroundService
+    ILogger<AIObservationBackgroundService> logger, IWorkoutStatsStore workoutStatsStore, IExerciseStatsStore exerciseStatsStore,
+    IMuscleGroupStatsStore muscleGroupStatsStore) : BackgroundService
 {
     private readonly IAIObservationQueue _aiObservationQueue = aiObservationQueue;
     private readonly IAIObservationStore _aIObservationStore = aIObservationStore;
     private readonly IWorkoutStatsStore _workoutStatsStore = workoutStatsStore;
     private readonly IExerciseStatsStore _exerciseStatsStore = exerciseStatsStore;
+    private readonly IMuscleGroupStatsStore _muscleGroupStatsStore = muscleGroupStatsStore;
     private readonly ILogger<AIObservationBackgroundService> _logger = logger;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -50,8 +52,12 @@ public class AIObservationBackgroundService(IAIObservationQueue aiObservationQue
 
                         var currentExerciseStats = await _exerciseStatsStore.GetByUserIdAndExerciseNameAsync(eao.UserId, eao.Metadata?.Name ?? string.Empty, stoppingToken);
                         var updatedExerciseStats = ExerciseStatsCalculator.Update(currentExerciseStats, eao);
-
                         await _exerciseStatsStore.UpsertAsync(updatedExerciseStats, stoppingToken);
+
+                        var currentMuscleGroupStats = await _muscleGroupStatsStore.GetByUserAndMuscleGroupAsync(eao.UserId, eao.MuscleGroup, stoppingToken);
+                        var updatedMuscleGroupStats = MuscleGroupStatsCalculator.Update(currentMuscleGroupStats, eao);
+                        await _muscleGroupStatsStore.UpsertAsync(updatedMuscleGroupStats, stoppingToken);
+
                         break;
 
                     default:
