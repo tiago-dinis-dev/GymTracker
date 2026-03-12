@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(GymTrackerDbContext))]
-    [Migration("20251230150347_SurrogateKeysOwnedTypes")]
-    partial class SurrogateKeysOwnedTypes
+    [Migration("20260312152228_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -28,40 +28,50 @@ namespace Infrastructure.Migrations
 
                     b.Property<string>("MuscleGroup")
                         .IsRequired()
+                        .HasMaxLength(50)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
                         .IsRequired()
+                        .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Name")
-                        .IsUnique();
-
-                    b.ToTable("Exercises");
+                    b.ToTable("Exercises", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Users.User", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<Guid>("UserId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
-                    b.Property<float>("HeightCm")
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<float?>("Height")
                         .HasColumnType("REAL");
+
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
-                    b.Property<float>("WeightKg")
+                    b.Property<float?>("Weight")
                         .HasColumnType("REAL");
 
-                    b.HasKey("Id");
+                    b.HasKey("UserId");
 
-                    b.ToTable("Users");
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Workouts.Workout", b =>
@@ -82,11 +92,19 @@ namespace Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("UserId");
+
                     b.ToTable("Workouts", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Workouts.Workout", b =>
                 {
+                    b.HasOne("Domain.Users.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.OwnsMany("Domain.Workouts.ExercisePerformed", "Exercises", b1 =>
                         {
                             b1.Property<Guid>("ExercisePerformedId")
@@ -121,6 +139,9 @@ namespace Infrastructure.Migrations
                                 {
                                     b2.Property<Guid>("SetRecordId")
                                         .ValueGeneratedOnAdd()
+                                        .HasColumnType("TEXT");
+
+                                    b2.Property<decimal>("Estimated1Rm")
                                         .HasColumnType("TEXT");
 
                                     b2.Property<Guid>("ExercisePerformedId")

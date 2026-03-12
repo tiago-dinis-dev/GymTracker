@@ -3,20 +3,22 @@ using Application.Common.Interfaces.Store;
 using Common.AI.Models;
 using Common.AI.Observations;
 using Infrastructure.AI.Calculators;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.BackgroundJobs;
 
-public class AIObservationBackgroundService(IAIObservationQueue aiObservationQueue, IAIObservationStore aIObservationStore, 
-    ILogger<AIObservationBackgroundService> logger, IWorkoutStatsStore workoutStatsStore, IExerciseStatsStore exerciseStatsStore,
+public class AIObservationBackgroundService(IAIObservationQueue aiObservationQueue, IServiceProvider serviceProvider, 
+    ILogger<AIObservationBackgroundService> logger, 
+    IWorkoutStatsStore workoutStatsStore, IExerciseStatsStore exerciseStatsStore,
     IMuscleGroupStatsStore muscleGroupStatsStore) : BackgroundService
 {
     private readonly IAIObservationQueue _aiObservationQueue = aiObservationQueue;
-    private readonly IAIObservationStore _aIObservationStore = aIObservationStore;
     private readonly IWorkoutStatsStore _workoutStatsStore = workoutStatsStore;
     private readonly IExerciseStatsStore _exerciseStatsStore = exerciseStatsStore;
     private readonly IMuscleGroupStatsStore _muscleGroupStatsStore = muscleGroupStatsStore;
+    private readonly IServiceProvider _serviceProvider = serviceProvider;
     private readonly ILogger<AIObservationBackgroundService> _logger = logger;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -27,10 +29,13 @@ public class AIObservationBackgroundService(IAIObservationQueue aiObservationQue
             {
                 var observation = await _aiObservationQueue.DequeueAsync(stoppingToken);
 
+                using var scope = _serviceProvider.CreateScope();
+                var store = scope.ServiceProvider.GetRequiredService<IAIObservationStore>();
+
                 switch (observation)
                 {
                     case WorkoutCompletedObservation wco:
-                        await _aIObservationStore.AddAsync(wco, stoppingToken);
+                        await store.AddAsync(wco, stoppingToken);
 
                         var currentStats = await _workoutStatsStore.GetByUserIdAsync(wco.UserId, stoppingToken) 
                             ?? new UserWorkoutStats(
@@ -48,7 +53,7 @@ public class AIObservationBackgroundService(IAIObservationQueue aiObservationQue
                         break;
 
                     case ExerciseAddedObservation eao:
-                        await _aIObservationStore.AddAsync(eao, stoppingToken);
+                        await store.AddAsync(eao, stoppingToken);
 
                         var currentExerciseStats = await _exerciseStatsStore.GetByUserIdAndExerciseNameAsync(eao.UserId, eao.Metadata?.Name ?? string.Empty, stoppingToken);
                         var updatedExerciseStats = ExerciseStatsCalculator.Update(currentExerciseStats, eao);

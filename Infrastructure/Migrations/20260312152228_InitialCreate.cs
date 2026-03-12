@@ -6,21 +6,59 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class SurrogateKeysOwnedTypes : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "SetRecord");
+            migrationBuilder.CreateTable(
+                name: "Exercises",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Name = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
+                    MuscleGroup = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Exercises", x => x.Id);
+                });
 
-            migrationBuilder.DropTable(
-                name: "ExercisePerformed");
+            migrationBuilder.CreateTable(
+                name: "Users",
+                columns: table => new
+                {
+                    UserId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Name = table.Column<string>(type: "TEXT", maxLength: 200, nullable: false),
+                    Email = table.Column<string>(type: "TEXT", maxLength: 200, nullable: false),
+                    Weight = table.Column<float>(type: "REAL", nullable: true),
+                    Height = table.Column<float>(type: "REAL", nullable: true),
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Users", x => x.UserId);
+                });
 
-            migrationBuilder.RenameColumn(
-                name: "DateTime",
-                table: "Workouts",
-                newName: "Date");
+            migrationBuilder.CreateTable(
+                name: "Workouts",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    UserId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Date = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    Status = table.Column<string>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Workouts", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Workouts_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Restrict);
+                });
 
             migrationBuilder.CreateTable(
                 name: "WorkoutExercises",
@@ -54,6 +92,7 @@ namespace Infrastructure.Migrations
                     SetRecordId = table.Column<Guid>(type: "TEXT", nullable: false),
                     Reps = table.Column<int>(type: "INTEGER", nullable: false),
                     Weight = table.Column<float>(type: "REAL", nullable: false),
+                    Estimated1Rm = table.Column<decimal>(type: "TEXT", nullable: false),
                     ExercisePerformedId = table.Column<Guid>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
@@ -68,15 +107,15 @@ namespace Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Exercises_Name",
-                table: "Exercises",
-                column: "Name",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
                 name: "IX_ExerciseSets_ExercisePerformedId",
                 table: "ExerciseSets",
                 column: "ExercisePerformedId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Users_Email",
+                table: "Users",
+                column: "Email",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_WorkoutExercises_ExerciseId",
@@ -88,6 +127,11 @@ namespace Infrastructure.Migrations
                 table: "WorkoutExercises",
                 columns: new[] { "WorkoutId", "ExerciseId" },
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Workouts_UserId",
+                table: "Workouts",
+                column: "UserId");
         }
 
         /// <inheritdoc />
@@ -99,54 +143,14 @@ namespace Infrastructure.Migrations
             migrationBuilder.DropTable(
                 name: "WorkoutExercises");
 
-            migrationBuilder.DropIndex(
-                name: "IX_Exercises_Name",
-                table: "Exercises");
+            migrationBuilder.DropTable(
+                name: "Exercises");
 
-            migrationBuilder.RenameColumn(
-                name: "Date",
-                table: "Workouts",
-                newName: "DateTime");
+            migrationBuilder.DropTable(
+                name: "Workouts");
 
-            migrationBuilder.CreateTable(
-                name: "ExercisePerformed",
-                columns: table => new
-                {
-                    WorkoutId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Id = table.Column<int>(type: "INTEGER", nullable: false),
-                    ExerciseId = table.Column<Guid>(type: "TEXT", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ExercisePerformed", x => new { x.WorkoutId, x.Id });
-                    table.ForeignKey(
-                        name: "FK_ExercisePerformed_Workouts_WorkoutId",
-                        column: x => x.WorkoutId,
-                        principalTable: "Workouts",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "SetRecord",
-                columns: table => new
-                {
-                    ExercisePerformedWorkoutId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    ExercisePerformedId = table.Column<int>(type: "INTEGER", nullable: false),
-                    Id = table.Column<int>(type: "INTEGER", nullable: false),
-                    Reps = table.Column<int>(type: "INTEGER", nullable: false),
-                    Weight = table.Column<float>(type: "REAL", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_SetRecord", x => new { x.ExercisePerformedWorkoutId, x.ExercisePerformedId, x.Id });
-                    table.ForeignKey(
-                        name: "FK_SetRecord_ExercisePerformed_ExercisePerformedWorkoutId_ExercisePerformedId",
-                        columns: x => new { x.ExercisePerformedWorkoutId, x.ExercisePerformedId },
-                        principalTable: "ExercisePerformed",
-                        principalColumns: new[] { "WorkoutId", "Id" },
-                        onDelete: ReferentialAction.Cascade);
-                });
+            migrationBuilder.DropTable(
+                name: "Users");
         }
     }
 }

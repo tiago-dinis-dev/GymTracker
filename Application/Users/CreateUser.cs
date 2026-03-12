@@ -14,9 +14,9 @@ public class CreateUserHandler(IUserRepository userRepository)
     private readonly IUserRepository _userRepo = userRepository;
     public async Task<UserDto?> HandleAsync(CreateUserCommand command)
     {
+        
+        await EnsureUserDoesNotExist(command.Email);
         var user = new User(Guid.NewGuid(), command.Name, command.Email, command.Weight, command.Height);
-
-        await EnsureUserDoesNotExist(user.UserId);
 
         await _userRepo.AddAsync(user);
         await _userRepo.SaveChangesAsync();
@@ -33,12 +33,12 @@ public class CreateUserHandler(IUserRepository userRepository)
         return dto;
     }
 
-    private async Task EnsureUserDoesNotExist(Guid userId)
+    private async Task EnsureUserDoesNotExist(string email)
     {
-        var existingUser = await _userRepo.GetByIdAsync(userId);
+        var existingUser = await _userRepo.GetByEmailAsync(email);
         if (existingUser != null)
         {
-            throw new DomainRuleViolationException("User with this ID already exists.");
+            throw new DomainRuleViolationException("User with this email already exists.");
         }
     }
 }

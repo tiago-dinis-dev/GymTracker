@@ -27,6 +27,7 @@ public static class DependencyInjection
 
         services.AddScoped<IWorkoutRepository, WorkoutRepository>();
         services.AddScoped<IExerciseRepository, ExerciseRepository>();
+        services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IAIObservationStore, AIObservationStore>();
 
         services.AddSingleton<IWorkoutStatsStore, InMemoryWorkoutStatsStore>();

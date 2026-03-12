@@ -18,7 +18,6 @@ public class UpdateUserHandler(IUserRepository userRepository, ICacheService cac
     public async Task HandleAsync(UpdateUserCommand command)
     {
         var userId = _userContextService.GetUserId();
-
         var user = await _userRepo.GetByIdAsync(userId) ?? throw new NotFoundException("User not found.");
 
         user.UpdateProfile(command.Name, command.Email, command.Weight, command.Height);

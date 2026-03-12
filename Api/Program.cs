@@ -6,12 +6,14 @@ using Application.Common.Interfaces;
 using Application.Workouts.Validators;
 using FluentValidation;
 using Infrastructure;
+using Infrastructure.AI.Persistence;
 using Infrastructure.Caching;
 using Infrastructure.Persistence;
 using Infrastructure.Persistence.Seed;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,7 +24,18 @@ builder.Services.AddValidatorsFromAssemblyContaining<CreateWorkoutRequestValidat
 builder.Services.AddValidatorsFromAssemblyContaining<AddExerciseRequestValidator>();
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Enter 'Bearer' [space] and then your valid token in the text input below."
+    });
+});
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 if (string.IsNullOrEmpty(connectionString))
@@ -80,11 +93,14 @@ var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
-    var context = scope.ServiceProvider
-                       .GetRequiredService<GymTrackerDbContext>();
+    var svc = scope.ServiceProvider;
+    var gym = svc.GetRequiredService<GymTrackerDbContext>();
 
-    await context.Database.MigrateAsync();
-    await DatabaseSeeder.SeedAsync(context);
+    await gym.Database.MigrateAsync();
+    await DatabaseSeeder.SeedAsync(gym);
+
+    var aiDb = svc.GetRequiredService<AIObservationDbContext>();
+    await aiDb.Database.MigrateAsync();
 }
 
 // Configure the HTTP request pipeline.
@@ -98,10 +114,10 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseHttpsRedirection();
 
+app.UseCors();
+
 app.UseAuthentication();
 app.UseAuthorization();
-
-app.UseCors();
 
 app.MapControllers();
 
