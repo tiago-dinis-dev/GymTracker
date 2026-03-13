@@ -16,10 +16,7 @@ public class CreateWorkoutHandler(IWorkoutRepository workoutRepository, ICacheSe
     {
         var userId = userContextService.GetUserId();
 
-        if (command.Date > DateTime.UtcNow)
-        {
-            throw new ArgumentException("Workout date cannot be in the future.");
-        }
+        await ValidateWorkoutDate(command.Date, userId);
 
         var workout = new Workout(userId, command.Date);
 
@@ -30,5 +27,23 @@ public class CreateWorkoutHandler(IWorkoutRepository workoutRepository, ICacheSe
         await _workoutRepo.SaveChangesAsync(ct);
 
         return workout.Id;
+    }
+
+    private async Task ValidateWorkoutDate(DateTime date, Guid userId)
+    {
+        var existingWorkouts = await _workoutRepo.GetWorkoutsByUserIdAsync(userId);
+
+        if (date > DateTime.UtcNow)
+        {
+            throw new ArgumentException("Workout date cannot be in the future.");
+        }
+        else if(date < DateTime.UtcNow.AddHours(-2))
+        {
+            throw new ArgumentException("Workout date cannot be more than two hours in the past.");
+        }
+        else if (existingWorkouts.Any(w => w.Date == date || w.Date < date.Date.AddHours(2)))
+        {
+            throw new ArgumentException("A workout already exists for the selected date or within the two-hour window.");
+        }
     }
 }

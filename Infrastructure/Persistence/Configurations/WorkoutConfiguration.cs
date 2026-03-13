@@ -12,6 +12,7 @@ public class WorkoutConfiguration : IEntityTypeConfiguration<Workout>
     {
         builder.ToTable("Workouts");
         builder.HasKey(w => w.Id);
+        builder.Property(w => w.Id).HasColumnName("WorkoutId");
 
         builder.Property(w => w.UserId).IsRequired();
         builder.HasOne<User>()

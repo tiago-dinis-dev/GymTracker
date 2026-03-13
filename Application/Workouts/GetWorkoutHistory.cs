@@ -2,6 +2,7 @@
 using Application.Common.Interfaces;
 using Application.Common.Interfaces.Repository;
 using Application.Dtos;
+using Domain.Workouts;
 
 namespace Application.Workouts;
 
@@ -14,6 +15,7 @@ public class GetWorkoutHistoryHandler(IWorkoutRepository workoutRepository, ICac
     public async Task<List<WorkoutHistoryDto>> HandleAsync()
     {
         var userId = _userContext.GetUserId();
+
         var cacheKey = CacheKeys.WorkoutHistory(userId);
         var cached = await _cache.GetAsync<List<WorkoutHistoryDto>>(cacheKey);
 
@@ -26,12 +28,12 @@ public class GetWorkoutHistoryHandler(IWorkoutRepository workoutRepository, ICac
             Date = w.Date,
             Status = w.Status.ToString(),
             TotalVolume = w.CalculateTotalVolume()
-        }).ToList();
+        }).Where(w => w.Status == "Completed").ToList();
 
         await _cache.SetAsync(
             cacheKey,
             result,
-            TimeSpan.FromMinutes(5)
+            TimeSpan.FromSeconds(30)
         );
 
         return result;  

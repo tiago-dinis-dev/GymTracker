@@ -7,6 +7,6 @@ public record WorkoutDetailsDto
     public Guid Id { get; init; }
     public Guid UserId { get; init; }
     public DateTime Date { get; init; }
-    public WorkoutStatus Status { get; init; }
+    public string Status { get; init; } = string.Empty;
     public List<ExercisePerformedDto> Exercises { get; init; } = new();
 }

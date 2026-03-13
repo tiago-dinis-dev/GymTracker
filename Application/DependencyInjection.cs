@@ -1,4 +1,5 @@
-﻿using Application.Common.Interfaces;
+﻿using Application.Common;
+using Application.Common.Interfaces;
 using Application.Users;
 using Application.Workouts;
 using Domain.Common.Events;
@@ -21,6 +22,7 @@ public static class DependencyInjection
         services.AddScoped<GetWorkoutHistoryHandler>();
         services.AddScoped<GetWorkoutByIdHandler>();
         services.AddScoped<IDomainEventHandler<WorkoutCompleted>, WorkoutCompletedCacheHandler>();
+        services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
 
         return services;
     }

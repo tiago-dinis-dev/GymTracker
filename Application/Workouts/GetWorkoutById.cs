@@ -24,16 +24,16 @@ public class GetWorkoutByIdHandler(IWorkoutRepository workoutRepository)
             Id = workout.Id,
             UserId = workout.UserId,
             Date = workout.Date,
-            Status = workout.Status,
-            Exercises = workout.Exercises.Select(e => new ExercisePerformedDto
+            Status = workout.Status.ToString(),
+            Exercises = [.. workout.Exercises.Select(e => new ExercisePerformedDto
             {
                 ExerciseId = e.ExerciseId,
-                Sets = e.Sets.Select(s => new SetRecordDto
+                Sets = [.. e.Sets.Select(s => new SetRecordDto
                 {
                     Reps = s.Reps,
                     Weight = s.Weight
-                }).ToList()
-            }).ToList()
+                })]
+            })]
         };
     }
 }
