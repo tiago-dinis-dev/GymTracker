@@ -2,6 +2,7 @@
 using Application.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity.Data;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -44,23 +45,43 @@ public class UserController(CreateUserHandler createUserHandler, GetUserByEmailH
 
         var token = GenerateJwtToken(user);
 
+        // Set token in a cookie so same-origin clients (Swagger UI) automatically send it on subsequent requests.
+        var cookieOptions = new CookieOptions
+        {
+            HttpOnly = false, // allow client-side JS if needed; set true if you only want server-side access and adjust JwtBearer accordingly
+            Secure = false, // for local dev; set to true in production over HTTPS
+            SameSite = SameSiteMode.Lax,
+            Expires = DateTime.UtcNow.AddHours(12)
+        };
+
+        Response.Cookies.Append("X-Access-Token", $"Bearer {token}", cookieOptions);
+
         return Ok(new { Token = token });
     }
 
     [Authorize]
-    [HttpPut("update")]
-    public async Task<IActionResult> UpdateUser(UpdateUserRequest request)
+    [HttpPatch("update")]
+    public async Task<IActionResult> UpdateUser([FromBody] JsonPatchDocument<UpdateUserRequest> patchDocument)
     {
+        if (patchDocument == null)
+            return BadRequest();
+
+        var dto = new UpdateUserRequest();
+        patchDocument.ApplyTo(dto, ModelState);
+
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
         var command = new UpdateUserCommand(
-            request.Name,
-            request.Email,
-            request.Weight,
-            request.Height
+            dto.Name,
+            dto.Email,
+            dto.Weight,
+            dto.Height
         );
 
         await _updateUserHandler.HandleAsync(command);
 
-        return NoContent();
+        return Ok(command);
     }
 
     private string GenerateJwtToken(UserDto user)

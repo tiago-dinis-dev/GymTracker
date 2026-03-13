@@ -19,7 +19,7 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddNewtonsoftJson();
 builder.Services.AddValidatorsFromAssemblyContaining<CreateWorkoutRequestValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<AddExerciseRequestValidator>();
 
@@ -76,6 +76,24 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidAudience = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(jwtKey))
+        };
+
+        // If Authorization header is not present, allow reading token from cookie named "X-Access-Token"
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = ctx =>
+            {
+                if (string.IsNullOrEmpty(ctx.Token) && ctx.Request.Cookies.TryGetValue("X-Access-Token", out var cookieToken))
+                {
+                    // support both raw token and "Bearer <token>"
+                    if (cookieToken.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                        ctx.Token = cookieToken.Substring("Bearer ".Length);
+                    else
+                        ctx.Token = cookieToken;
+                }
+
+                return Task.CompletedTask;
+            }
         };
     });
 
