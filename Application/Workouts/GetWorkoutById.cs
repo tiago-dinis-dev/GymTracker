@@ -31,7 +31,8 @@ public class GetWorkoutByIdHandler(IWorkoutRepository workoutRepository)
                 Sets = [.. e.Sets.Select(s => new SetRecordDto
                 {
                     Reps = s.Reps,
-                    Weight = s.Weight
+                    Weight = s.Weight,
+                    IntensityPercent1Rm = s.IntensityPercent1Rm
                 })]
             })]
         };

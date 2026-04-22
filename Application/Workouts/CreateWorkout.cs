@@ -6,17 +6,20 @@ using Domain.Workouts;
 namespace Application.Workouts;
 
 public record CreateWorkoutCommand(DateTime Date);
+public record CreateWorkoutResult(Guid UserId, Guid WorkoutId, DateTime Date, string Status);
 
 public class CreateWorkoutHandler(IWorkoutRepository workoutRepository, ICacheService cacheService, IUserContextService userContextService)
 {
     private readonly IWorkoutRepository _workoutRepo = workoutRepository;
     private readonly ICacheService _cache = cacheService;
 
-    public async Task<Guid> HandleAsync(CreateWorkoutCommand command, CancellationToken ct)
+    public async Task<CreateWorkoutResult> HandleAsync(CreateWorkoutCommand command, CancellationToken ct)
     {
         var userId = userContextService.GetUserId();
+        var existingWorkouts = await _workoutRepo.GetWorkoutsByUserIdAsync(userId);
 
-        await ValidateWorkoutDate(command.Date, userId);
+        await ValiadeIfOnGoingWorkouts(existingWorkouts);
+        await ValidateWorkoutDate(existingWorkouts, command.Date);
 
         var workout = new Workout(userId, command.Date);
 
@@ -26,13 +29,11 @@ public class CreateWorkoutHandler(IWorkoutRepository workoutRepository, ICacheSe
 
         await _workoutRepo.SaveChangesAsync(ct);
 
-        return workout.Id;
+        return new CreateWorkoutResult(userId, workout.Id, workout.Date, workout.Status.ToString());
     }
 
-    private async Task ValidateWorkoutDate(DateTime date, Guid userId)
+    private static async Task ValidateWorkoutDate(List<Workout> existingWorkouts, DateTime date)
     {
-        var existingWorkouts = await _workoutRepo.GetWorkoutsByUserIdAsync(userId);
-
         if (date > DateTime.UtcNow)
         {
             throw new ArgumentException("Workout date cannot be in the future.");
@@ -41,9 +42,17 @@ public class CreateWorkoutHandler(IWorkoutRepository workoutRepository, ICacheSe
         {
             throw new ArgumentException("Workout date cannot be more than two hours in the past.");
         }
-        else if (existingWorkouts.Any(w => w.Date == date || w.Date < date.Date.AddHours(2)))
+        else if (existingWorkouts.Any(w => w.Date == date || w.Date.AddHours(2) > date))
         {
             throw new ArgumentException("A workout already exists for the selected date or within the two-hour window.");
+        }
+    }
+
+    private static async Task ValiadeIfOnGoingWorkouts(List<Workout> existingWorkouts)
+    {
+        if (existingWorkouts.Any(w => w.Status == WorkoutStatus.InProgress))
+        {
+            throw new InvalidOperationException("There is already a workout in progress.");
         }
     }
 }

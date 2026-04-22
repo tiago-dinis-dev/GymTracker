@@ -1,5 +1,6 @@
 ﻿using Application.Common.Interfaces.Store;
 using Common.AI.Models;
+using Common.Exercises;
 using Domain.Exercises;
 using System.Collections.Concurrent;
 

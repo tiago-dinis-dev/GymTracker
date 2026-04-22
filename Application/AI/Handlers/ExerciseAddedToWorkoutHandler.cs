@@ -2,6 +2,7 @@
 using Application.Common.Interfaces.Repository;
 using Application.Exceptions;
 using Common.AI.Observations;
+using Common.Workouts;
 using Domain.Common.Events;
 
 namespace Application.AI.Handlers;
@@ -14,6 +15,7 @@ public sealed class ExerciseAddedToWorkoutHandler(IAIObservationQueue aiObservat
     public async Task HandleAsync(ExerciseAddedToWorkout evt, CancellationToken cancellationToken)
     {
         var exercise = await _exerciseRepository.GetByIdAsync(evt.exercise.ExerciseId) ?? throw new NotFoundException("Exercise not found");
+
         var observation = new ExerciseAddedObservation
         {
             WorkoutId = evt.WorkoutId,
@@ -21,7 +23,13 @@ public sealed class ExerciseAddedToWorkoutHandler(IAIObservationQueue aiObservat
             Metadata = new ExerciseDetails
             {
                 Name = exercise.Name,
-                Sets = evt.exercise.Sets,
+                Sets = evt.exercise.Sets.Select(s => new SetInfo 
+                { 
+                    Index = s.SetIndex,
+                    Reps = s.Reps, 
+                    Weight = s.Weight, 
+                    Estimated1Rm = s.Estimated1Rm 
+                }).ToList(),
                 MuscleGroup = exercise.MuscleGroup,
                 IntensityPercent1Rm = evt.exercise.IntensityPercent1Rm,
             },

@@ -1,4 +1,5 @@
-﻿using Domain.Exercises;
+﻿using Common.Exercises;
+using Domain.Exercises;
 
 namespace Infrastructure.Persistence.Seed;
 

@@ -19,11 +19,11 @@ public class CompleteWorkoutHandler(IWorkoutRepository workoutRepository, IUserC
         var workout = await _workoutRepository.GetWorkoutByIdAsync(command.WorkoutId) ?? throw new NotFoundException("Workout not found");
 
         if (workout.UserId != userId)
-            throw new DomainRuleViolationException("Workout does not belong to user");
+            throw new ApplicationDomainRuleViolationException("Workout does not belong to user");
 
 
         if (workout.Exercises.Count == 0)
-            throw new DomainRuleViolationException("Workout cannot be completed without exercises");
+            throw new ApplicationDomainRuleViolationException("Workout cannot be completed without exercises");
 
         workout.Complete();
 

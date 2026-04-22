@@ -33,7 +33,7 @@ public class GetUserByEmailHandler(IUserRepository userRepository, ICacheService
         await _cache.SetAsync(
             cacheKey,
             user,
-            TimeSpan.FromMinutes(10)
+            TimeSpan.FromMinutes(2)
         );
         
         return dto;

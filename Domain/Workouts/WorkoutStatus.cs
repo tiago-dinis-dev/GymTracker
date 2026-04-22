@@ -2,6 +2,6 @@
 
 public enum WorkoutStatus
 {
-    Planned,
+    InProgress,
     Completed
 }

@@ -38,7 +38,7 @@ public class CreateUserHandler(IUserRepository userRepository)
         var existingUser = await _userRepo.GetByEmailAsync(email);
         if (existingUser != null)
         {
-            throw new DomainRuleViolationException("User with this email already exists.");
+            throw new ApplicationDomainRuleViolationException("User with this email already exists.");
         }
     }
 }

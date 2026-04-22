@@ -19,6 +19,7 @@ public static class DependencyInjection
         services.AddScoped<AutoCompleteWorkoutHandler>();
         services.AddScoped<CreateWorkoutHandler>();
         services.AddScoped<CompleteWorkoutHandler>();
+        services.AddScoped<UpdateExerciseSetInWorkoutHandler>();
         services.AddScoped<GetWorkoutHistoryHandler>();
         services.AddScoped<GetWorkoutByIdHandler>();
         services.AddScoped<IDomainEventHandler<WorkoutCompleted>, WorkoutCompletedCacheHandler>();

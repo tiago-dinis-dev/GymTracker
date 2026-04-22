@@ -1,4 +1,5 @@
 ﻿using Domain.Common;
+using Common.Exercises;
 
 namespace Domain.Exercises;
 

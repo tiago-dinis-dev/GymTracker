@@ -1,5 +1,4 @@
 ﻿using Application.Workouts;
-using Common.Workouts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -21,7 +20,7 @@ public class WorkoutsController(CreateWorkoutHandler createWorkoutHandler,
     public async Task<IActionResult> GetWorkoutById(Guid workoutId)
     {
         var workout = await _getWorkoutByIdHandler.HandleAsync(new GetWorkoutByIdQuery(workoutId));
-        if(workout == null)
+        if (workout == null)
             return NotFound();
 
         return Ok(workout);
@@ -47,22 +46,11 @@ public class WorkoutsController(CreateWorkoutHandler createWorkoutHandler,
 
         return CreatedAtAction(
             nameof(GetWorkoutById),
-            new { workoutId = result },
-            new CreateWorkoutResponse(result)
+            new { workoutId = result.WorkoutId },
+            result
         );
     }
 
     #endregion
 
-    // PUT api/<WorkoutController>/5
-    [HttpPut("{id}")]
-    public void Put(int id, [FromBody] string value)
-    {
-    }
-
-    // DELETE api/<WorkoutController>/5
-    [HttpDelete("{id}")]
-    public void Delete(int id)
-    {
-    }
 }

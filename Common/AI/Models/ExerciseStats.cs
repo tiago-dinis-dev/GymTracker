@@ -1,4 +1,4 @@
-﻿using Domain.Exercises;
+﻿using Common.Exercises;
 
 namespace Common.AI.Models;
 

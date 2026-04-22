@@ -1,5 +1,5 @@
-﻿using Domain.Exercises;
-using Domain.Workouts;
+﻿using Common.Exercises;
+using Common.Workouts;
 
 namespace Common.AI.Observations;
 
@@ -18,7 +18,7 @@ public record ExerciseAddedObservation
 public record ExerciseDetails
 {
     public string? Name { get; init; }
-    public IReadOnlyCollection<SetRecord>? Sets { get; init; }
+    public IReadOnlyCollection<SetInfo>? Sets { get; init; }
     public MuscleGroup MuscleGroup { get; init; }
     public decimal IntensityPercent1Rm { get; init; }
 }

@@ -1,6 +1,4 @@
-﻿using Domain.Workouts;
-
-namespace Application.Dtos;
+﻿namespace Application.Dtos;
 
 public record WorkoutDetailsDto
 {

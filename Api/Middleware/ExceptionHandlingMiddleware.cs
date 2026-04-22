@@ -1,4 +1,5 @@
 ﻿using Application.Exceptions;
+using Domain.Common;
 
 namespace Api.Middleware;
 
@@ -24,6 +25,16 @@ public class ExceptionHandlingMiddleware
             _logger.LogWarning(ex, "A handled application exception occurred.");
             await HandleAppExceptionAsync(context, ex);
         }
+        catch (DomainRuleViolationException ex)
+        {
+            _logger.LogWarning(ex, "A domain rule violation occurred.");
+            await HandleDomainExceptionAsync(context, ex, StatusCodes.Status400BadRequest);
+        }
+        catch (DomainException ex)
+        {
+            _logger.LogWarning(ex, "A domain exception occurred.");
+            await HandleDomainExceptionAsync(context, ex, StatusCodes.Status400BadRequest);
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "An unhandled exception occurred.");
@@ -35,6 +46,18 @@ public class ExceptionHandlingMiddleware
     {
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = ex.StatusCode;
+
+        var response = new
+        {
+            error = ex.Message
+        };
+        return context.Response.WriteAsJsonAsync(response);
+    }
+
+    private static Task HandleDomainExceptionAsync(HttpContext context, DomainException ex, int statusCode)
+    {
+        context.Response.ContentType = "application/json";
+        context.Response.StatusCode = statusCode;
 
         var response = new
         {

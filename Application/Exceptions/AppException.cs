@@ -1,4 +1,5 @@
-﻿namespace Application.Exceptions;
+﻿using Domain.Common;
+namespace Application.Exceptions;
 
 public abstract class AppException : Exception
 {
@@ -16,9 +17,9 @@ public class NotFoundException : AppException
     }
 }
 
-public class DomainRuleViolationException : AppException
+public class ApplicationDomainRuleViolationException : AppException
 {
-    public DomainRuleViolationException(string message) : base(message, 400)
+    public ApplicationDomainRuleViolationException(string message) : base(message, 400)
     {
     }
 }

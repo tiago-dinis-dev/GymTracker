@@ -1,4 +1,4 @@
-﻿namespace Domain.Exercises;
+﻿namespace Common.Exercises;
 
 public enum MuscleGroup
 {

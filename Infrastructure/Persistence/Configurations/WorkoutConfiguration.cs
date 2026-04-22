@@ -45,9 +45,16 @@ public class WorkoutConfiguration : IEntityTypeConfiguration<Workout>
                 sb.ToTable("ExerciseSets");
 
                 sb.WithOwner().HasForeignKey("ExercisePerformedId");
-                
+
                 sb.Property<Guid>("SetRecordId").ValueGeneratedOnAdd();
                 sb.HasKey("SetRecordId");
+
+                sb.Property(s => s.SetIndex).IsRequired();
+                sb.Property(s => s.Reps).IsRequired();
+                sb.Property(s => s.Weight).IsRequired();
+                sb.Property(s => s.Estimated1Rm).IsRequired();
+
+                sb.HasIndex("ExercisePerformedId", "SetIndex").IsUnique();
             });
         });
 
