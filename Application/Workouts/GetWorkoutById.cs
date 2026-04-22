@@ -11,10 +11,10 @@ public class GetWorkoutByIdHandler(IWorkoutRepository workoutRepository)
 {
     private readonly IWorkoutRepository _workoutRepository = workoutRepository;
 
-    public async Task<WorkoutDetailsDto> HandleAsync(GetWorkoutByIdQuery command)
+    public async Task<WorkoutDetailsDto?> HandleAsync(GetWorkoutByIdQuery command)
     {
-        var workout = await _workoutRepository.GetWorkoutByIdAsync(command.WorkoutId) ?? throw new NotFoundException("Workout not found.");
-        return MapToDto(workout);
+        var workout = await _workoutRepository.GetWorkoutByIdAsync(command.WorkoutId);
+        return workout == null ? throw new NotFoundException("Workout not found.") : MapToDto(workout);
     }
 
     private static WorkoutDetailsDto MapToDto(Workout workout)

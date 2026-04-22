@@ -3,7 +3,6 @@ using Application.Common.Interfaces;
 using Application.Common.Interfaces.Repository;
 using Application.Exceptions;
 using Domain.Workouts;
-using Domain.Common;
 using Common.Workouts;
 
 namespace Application.Workouts;
@@ -32,14 +31,7 @@ public class AddExerciseToWorkoutHandler(IWorkoutRepository workoutRepository, I
 
         var sets = command.Sets.Select(s => new SetRecord(s.Index, s.Reps, s.Weight, s.Estimated1Rm)).ToList();
 
-        try
-        {
-            workout.AddExercise(command.ExerciseId, sets);
-        }
-        catch (DomainException ex)
-        {
-            throw new ApplicationDomainRuleViolationException(ex.Message);
-        }
+        workout.AddExercise(command.ExerciseId, sets);
 
         await _cache.RemoveAsync(CacheKeys.WorkoutHistory(userId));
         await _cache.RemoveAsync(CacheKeys.WorkoutDetails(workout.Id));
