@@ -8,6 +8,7 @@ public interface IWorkoutRepository
     Task UpdateAsync(Workout workout);
     Task SaveChangesAsync(CancellationToken ct);
     Task<Workout?> GetWorkoutByIdAsync(Guid workoutId);
+    Task<Workout?> GetInProgressWorkoutAsync(Guid userId);
     Task<List<Workout>> GetWorkoutsByUserIdAsync(Guid userId);
     Task<IReadOnlyList<Workout>> GetCompletedWorkoutsAsync(Guid userId, DateTime cutoffUtc, CancellationToken ct = default);
     Task<IReadOnlyList<Workout>> GetExpiredWorkoutsAsync(DateTime cutoffUtc, CancellationToken ct = default);

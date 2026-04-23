@@ -1,4 +1,4 @@
-﻿using Domain.Users;
+using Domain.Users;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -18,5 +18,6 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.Property(u => u.Weight);
         builder.Property(u => u.Height);
+        builder.Property(u => u.PasswordHash).HasMaxLength(1024).IsRequired(false);
     }
 }

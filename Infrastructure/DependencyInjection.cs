@@ -1,6 +1,7 @@
 ﻿using Application.AI.Abstractions;
 using Application.Common.Interfaces.Repository;
 using Application.Common.Interfaces.Store;
+using Infrastructure.AI.Agent;
 using Infrastructure.AI.Persistence;
 using Infrastructure.AI.Persistence.InMemory;
 using Infrastructure.AI.Queue;
@@ -34,6 +35,8 @@ public static class DependencyInjection
         services.AddSingleton<IExerciseStatsStore, InMemoryExerciseStatsStore>();
         services.AddSingleton<IMuscleGroupStatsStore, InMemoryMuscleGroupStatsStore>();
         services.AddSingleton<IAIObservationQueue, InMemoryAIObservationQueue>();
+
+        services.AddScoped<IFitnessAgentService, FitnessAgentService>();
 
         return services;
     }

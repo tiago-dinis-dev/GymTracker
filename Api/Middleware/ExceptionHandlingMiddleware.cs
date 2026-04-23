@@ -25,6 +25,16 @@ public class ExceptionHandlingMiddleware
             _logger.LogWarning(ex, "A handled application exception occurred.");
             await HandleAppExceptionAsync(context, ex);
         }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "A validation exception occurred.");
+            await HandleMessageExceptionAsync(context, ex, StatusCodes.Status400BadRequest);
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "An invalid operation exception occurred.");
+            await HandleMessageExceptionAsync(context, ex, StatusCodes.Status400BadRequest);
+        }
         catch (DomainRuleViolationException ex)
         {
             _logger.LogWarning(ex, "A domain rule violation occurred.");
@@ -63,6 +73,15 @@ public class ExceptionHandlingMiddleware
         {
             error = ex.Message
         };
+        return context.Response.WriteAsJsonAsync(response);
+    }
+
+    private static Task HandleMessageExceptionAsync(HttpContext context, Exception ex, int statusCode)
+    {
+        context.Response.ContentType = "application/json";
+        context.Response.StatusCode = statusCode;
+
+        var response = new { error = ex.Message };
         return context.Response.WriteAsJsonAsync(response);
     }
 

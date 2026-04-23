@@ -1,4 +1,4 @@
-﻿using Domain.Common;
+using Domain.Common;
 
 namespace Domain.Users;
 
@@ -9,16 +9,18 @@ public class User : AggregateRoot
     public string Email { get; private set; } = string.Empty;
     public float? Weight { get; private set; }
     public float? Height { get; private set; }
+    public string? PasswordHash { get; private set; }
 
     private User() { }
 
-    public User(Guid userId, string name, string email, float? weight = null, float? height = null)
+    public User(Guid userId, string name, string email, float? weight = null, float? height = null, string? passwordHash = null)
     {
         UserId = userId;
         Name = name;
         Email = email;
         Weight = weight;
         Height = height;
+        PasswordHash = passwordHash;
     }
 
     public void UpdateProfile(string? name = null, string? email = null, float? weight = null, float? height = null)
@@ -27,6 +29,12 @@ public class User : AggregateRoot
         if (!string.IsNullOrWhiteSpace(email)) Email = email;
         if (weight.HasValue) Weight = weight.Value;
         if (height.HasValue) Height = height.Value;
+    }
+
+    public void SetPasswordHash(string passwordHash)
+    {
+        if (string.IsNullOrWhiteSpace(passwordHash)) throw new ArgumentException("Password hash cannot be empty.", nameof(passwordHash));
+        PasswordHash = passwordHash;
     }
 }
 

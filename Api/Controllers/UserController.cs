@@ -1,4 +1,4 @@
-﻿using Application.Dtos;
+using Application.Dtos;
 using Application.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity.Data;
@@ -13,18 +13,18 @@ namespace Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class UserController(CreateUserHandler createUserHandler, GetUserByEmailHandler getUserByEmailHandler, UpdateUserHandler updateUserHandler, IConfiguration configuration) : ControllerBase
+public class UserController(CreateUserHandler createUserHandler, UpdateUserHandler updateUserHandler, AuthenticateUserHandler authenticateUserHandler, IConfiguration configuration) : ControllerBase
 {
     private readonly CreateUserHandler _createUserHandler = createUserHandler;
-    private readonly GetUserByEmailHandler _getUserByEmailHandler = getUserByEmailHandler;
     private readonly UpdateUserHandler _updateUserHandler = updateUserHandler;
+    private readonly AuthenticateUserHandler _authenticateUserHandler = authenticateUserHandler;
     private readonly IConfiguration _configuration = configuration;
 
     [AllowAnonymous]
     [HttpPost("register")]
     public async Task<IActionResult> RegisterUser(CreateUserCommand request)
     {
-        var user = await _createUserHandler.HandleAsync(new CreateUserCommand(request.Name, request.Email, request.Weight, request.Height));
+        var user = await _createUserHandler.HandleAsync(request);
 
         if (user == null)
             return Unauthorized();
@@ -38,7 +38,7 @@ public class UserController(CreateUserHandler createUserHandler, GetUserByEmailH
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginRequest request)
     {
-        var user = await _getUserByEmailHandler.HandleAsync(new GetUserByEmailQuery(request.Email));
+        var user = await _authenticateUserHandler.HandleAsync(new AuthenticateUserCommand(request.Email, request.Password));
 
         if (user == null)
             return Unauthorized();

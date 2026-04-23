@@ -23,7 +23,7 @@ public class CreateUserHandlerTests
     {
         _userRepo.Setup(x => x.GetByEmailAsync(It.IsAny<string>())).ReturnsAsync((User?)null);
 
-        var result = await _handler.HandleAsync(new CreateUserCommand("John", "john@test.com", 80f, 180f));
+        var result = await _handler.HandleAsync(new CreateUserCommand("John", "john@test.com", "123", 180f));
 
         Assert.NotNull(result);
         Assert.Equal("John", result!.Name);
@@ -39,6 +39,6 @@ public class CreateUserHandlerTests
         _userRepo.Setup(x => x.GetByEmailAsync("john@test.com")).ReturnsAsync(existing);
 
         await Assert.ThrowsAsync<ApplicationDomainRuleViolationException>(() =>
-            _handler.HandleAsync(new CreateUserCommand("John", "john@test.com")));
+            _handler.HandleAsync(new CreateUserCommand("John", "john@test.com", "123")));
     }
 }

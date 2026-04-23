@@ -22,6 +22,12 @@ public class WorkoutRepository(GymTrackerDbContext gymTrackerDbContext) : IWorko
         return Task.CompletedTask;
     }
 
+    public async Task<Workout?> GetInProgressWorkoutAsync(Guid userId)
+    {
+        return await _gymTrackerDbContext.Workouts
+            .FirstOrDefaultAsync(w => w.UserId == userId && w.Status == WorkoutStatus.InProgress);
+    }
+
     public async Task<Workout?> GetWorkoutByIdAsync(Guid workoutId)
     {
         return await _gymTrackerDbContext.Workouts.FindAsync(workoutId);

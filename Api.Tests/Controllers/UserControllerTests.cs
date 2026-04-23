@@ -33,9 +33,9 @@ public class UserControllerTests
         _userContext.Setup(x => x.GetUserId()).Returns(_userId);
 
         var createHandler = new CreateUserHandler(_userRepo.Object);
-        var getByEmailHandler = new GetUserByEmailHandler(_userRepo.Object, _cache.Object);
         var updateHandler = new UpdateUserHandler(_userRepo.Object, _cache.Object, _userContext.Object);
-        _controller = new UserController(createHandler, getByEmailHandler, updateHandler, _configuration);
+        var userAuthenticationHandler = new AuthenticateUserHandler(_userRepo.Object);
+        _controller = new UserController(createHandler, updateHandler, userAuthenticationHandler, _configuration);
     }
 
     [Fact]
@@ -43,7 +43,7 @@ public class UserControllerTests
     {
         _userRepo.Setup(x => x.GetByEmailAsync(It.IsAny<string>())).ReturnsAsync((User?)null);
 
-        var result = await _controller.RegisterUser(new CreateUserCommand("John", "john@test.com"));
+        var result = await _controller.RegisterUser(new CreateUserCommand("John", "john@test.com", "123"));
 
         Assert.IsType<OkObjectResult>(result);
     }
@@ -53,7 +53,7 @@ public class UserControllerTests
     {
         _userRepo.Setup(x => x.GetByEmailAsync(It.IsAny<string>())).ReturnsAsync((User?)null);
 
-        var result = await _controller.RegisterUser(new CreateUserCommand("John", "john@test.com"));
+        var result = await _controller.RegisterUser(new CreateUserCommand("John", "john@test.com", "123"));
 
         var okResult = Assert.IsType<OkObjectResult>(result);
         Assert.NotNull(okResult.Value);

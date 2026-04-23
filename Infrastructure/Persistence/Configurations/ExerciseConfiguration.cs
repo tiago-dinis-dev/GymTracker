@@ -20,5 +20,15 @@ public class ExerciseConfiguration : IEntityTypeConfiguration<Exercise>
             .IsRequired()
             .HasMaxLength(50)
             .HasConversion<string>();
+
+        builder.Property(x => x.Difficulty)
+            .HasMaxLength(50)
+            .HasColumnType("TEXT")
+            .IsRequired(false);
+
+        builder.Property(x => x.Description)
+            .HasMaxLength(2000)
+            .HasColumnType("TEXT")
+            .IsRequired(false);
     }
 }

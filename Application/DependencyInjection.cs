@@ -1,4 +1,4 @@
-﻿using Application.Common;
+using Application.Common;
 using Application.Common.Interfaces;
 using Application.Users;
 using Application.Workouts;
@@ -14,6 +14,7 @@ public static class DependencyInjection
         services.AddScoped<CreateUserHandler>();
         services.AddScoped<GetUserByEmailHandler>();
         services.AddScoped<UpdateUserHandler>();
+        services.AddScoped<AuthenticateUserHandler>();
 
         services.AddScoped<AddExerciseToWorkoutHandler>();
         services.AddScoped<AutoCompleteWorkoutHandler>();
@@ -22,6 +23,7 @@ public static class DependencyInjection
         services.AddScoped<UpdateExerciseSetInWorkoutHandler>();
         services.AddScoped<GetWorkoutHistoryHandler>();
         services.AddScoped<GetWorkoutByIdHandler>();
+        services.AddScoped<GetInProgressWorkoutHandler>();
         services.AddScoped<IDomainEventHandler<WorkoutCompleted>, WorkoutCompletedCacheHandler>();
         services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
 

@@ -1,11 +1,12 @@
-﻿using Application.Common.Interfaces.Repository;
+using Application.Common.Interfaces.Repository;
 using Application.Dtos;
 using Application.Exceptions;
 using Domain.Users;
+using Application.Common.Security;
 
 namespace Application.Users;
 
-public record CreateUserCommand(string Name, string Email, float? Weight = null, float? Height = null);
+public record CreateUserCommand(string Name, string Email, string Password, float? Weight = null, float? Height = null);
 
 public record CreateUserResult(Guid UserId);
 
@@ -14,9 +15,14 @@ public class CreateUserHandler(IUserRepository userRepository)
     private readonly IUserRepository _userRepo = userRepository;
     public async Task<UserDto?> HandleAsync(CreateUserCommand command)
     {
-        
+        if (string.IsNullOrWhiteSpace(command.Password))
+            throw new ApplicationDomainRuleViolationException("Password is required.");
+
         await EnsureUserDoesNotExist(command.Email);
-        var user = new User(Guid.NewGuid(), command.Name, command.Email, command.Weight, command.Height);
+
+        var passwordHash = PasswordHasher.HashPassword(command.Password);
+
+        var user = new User(Guid.NewGuid(), command.Name, command.Email, command.Weight, command.Height, passwordHash);
 
         await _userRepo.AddAsync(user);
         await _userRepo.SaveChangesAsync();

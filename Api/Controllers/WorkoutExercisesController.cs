@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
 
-[Route("api/exercises")]
+[Route("api/workout-exercises")]
 [Authorize]
 [ApiController]
 public class WorkoutExercisesController(AddExerciseToWorkoutHandler addExerciseToWorkoutHandler, UpdateExerciseSetInWorkoutHandler updateExerciseInWorkoutHandler) : ControllerBase

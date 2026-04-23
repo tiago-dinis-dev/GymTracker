@@ -50,6 +50,8 @@ if (string.IsNullOrEmpty(connectionStringAI))
 }
 
 builder.Services.AddInfrastructure(connectionString, connectionStringAI);
+builder.Services.Configure<Infrastructure.AI.Agent.AgentOptions>(
+builder.Configuration.GetSection(Infrastructure.AI.Agent.AgentOptions.SectionName));
 builder.Services.AddMemoryCache();
 builder.Services.AddSingleton<ICacheService, MemoryCacheService>(); 
 builder.Services.AddApplication();

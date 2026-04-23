@@ -11,30 +11,30 @@ public class GetWorkoutHistoryHandler(IWorkoutRepository workoutRepository, ICac
     private readonly ICacheService _cache = cacheService;
     private readonly IUserContextService _userContext = userContextService;
 
-    public async Task<List<WorkoutHistoryDto>> HandleAsync()
+    public async Task<List<WorkoutSummaryDto>> HandleAsync()
     {
         var userId = _userContext.GetUserId();
 
         var cacheKey = CacheKeys.WorkoutHistory(userId);
-        var cached = await _cache.GetAsync<List<WorkoutHistoryDto>>(cacheKey);
+        var cached = await _cache.GetAsync<List<WorkoutSummaryDto>>(cacheKey);
 
         if (cached != null)
             return cached;
 
-        var workouts = await _workoutRepo.GetCompletedWorkoutsAsync(userId, DateTime.UtcNow);
+        var workouts = await _workoutRepo.GetWorkoutsByUserIdAsync(userId);
 
-        var result = workouts.Select(w => new WorkoutHistoryDto {
+        var result = workouts.Select(w => new WorkoutSummaryDto
+        {
+            WorkoutId = w.Id,
+            UserId = w.UserId,
             Date = w.Date,
-            Status = w.Status.ToString(),
+            Status = w.Status,
+            ExerciseCount = w.Exercises.Count,
             TotalVolume = w.CalculateTotalVolume()
         }).ToList();
 
-        await _cache.SetAsync(
-            cacheKey,
-            result,
-            TimeSpan.FromSeconds(30)
-        );
+        await _cache.SetAsync(cacheKey, result, TimeSpan.FromSeconds(30));
 
-        return result;  
+        return result;
     }
 }
