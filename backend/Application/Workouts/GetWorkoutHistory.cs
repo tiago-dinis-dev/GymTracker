@@ -21,7 +21,7 @@ public class GetWorkoutHistoryHandler(IWorkoutRepository workoutRepository, ICac
         if (cached != null)
             return cached;
 
-        var workouts = await _workoutRepo.GetWorkoutsByUserIdAsync(userId);
+        var workouts = await _workoutRepo.GetWorkoutsByUserIdAsync(userId) ?? new List<Domain.Workouts.Workout>();
 
         var result = workouts.Select(w => new WorkoutSummaryDto
         {

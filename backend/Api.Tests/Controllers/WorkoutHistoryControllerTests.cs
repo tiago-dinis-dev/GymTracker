@@ -28,30 +28,30 @@ public class WorkoutHistoryControllerTests
     [Fact]
     public async Task GetWorkoutHistory_ReturnsOkWithResults()
     {
-        var cached = new List<WorkoutHistoryDto>
+        var cached = new List<WorkoutSummaryDto>
         {
-            new() { Date = DateTime.UtcNow, Status = "Completed", TotalVolume = 1000f }
+            new() { WorkoutId = Guid.NewGuid(), UserId = _userId, Date = DateTime.UtcNow, Status = Domain.Workouts.WorkoutStatus.Completed, ExerciseCount = 1, TotalVolume = 1000f }
         };
-        _cache.Setup(x => x.GetAsync<List<WorkoutHistoryDto>>(It.IsAny<string>())).ReturnsAsync(cached);
+        _cache.Setup(x => x.GetAsync<List<WorkoutSummaryDto>>(It.IsAny<string>())).ReturnsAsync(cached);
 
         var result = await _controller.GetWorkoutHistory();
 
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        var value = Assert.IsType<List<WorkoutHistoryDto>>(okResult.Value);
+        var value = Assert.IsType<List<WorkoutSummaryDto>>(okResult.Value);
         Assert.Single(value);
     }
 
     [Fact]
     public async Task GetWorkoutHistory_EmptyList_ReturnsOk()
     {
-        _cache.Setup(x => x.GetAsync<List<WorkoutHistoryDto>>(It.IsAny<string>())).ReturnsAsync((List<WorkoutHistoryDto>?)null);
+        _cache.Setup(x => x.GetAsync<List<WorkoutSummaryDto>>(It.IsAny<string>())).ReturnsAsync((List<WorkoutSummaryDto>?)null);
         _workoutRepo.Setup(x => x.GetCompletedWorkoutsAsync(_userId, It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<Workout>().AsReadOnly());
 
         var result = await _controller.GetWorkoutHistory();
 
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        var value = Assert.IsType<List<WorkoutHistoryDto>>(okResult.Value);
+        var value = Assert.IsType<List<WorkoutSummaryDto>>(okResult.Value);
         Assert.Empty(value);
     }
 }

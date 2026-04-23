@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Moq;
+using Application.Common.Security;
 
 namespace Api.Tests.Controllers;
 
@@ -63,6 +64,8 @@ public class UserControllerTests
     public async Task Login_ValidUser_ReturnsOkWithToken()
     {
         var user = new User(Guid.NewGuid(), "John", "john@test.com");
+        user.SetPasswordHash(PasswordHasher.HashPassword("unused"));
+
         _cache.Setup(x => x.GetAsync<UserDto>(It.IsAny<string>())).ReturnsAsync((UserDto?)null);
         _userRepo.Setup(x => x.GetByEmailAsync("john@test.com")).ReturnsAsync(user);
 
