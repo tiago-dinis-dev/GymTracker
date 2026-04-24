@@ -37,7 +37,7 @@ If you want to create the key only when missing, use:
 1. The frontend calls `/api/...`.
 2. Nginx or Vite forwards that to the backend container.
 3. The backend runs the API and agent.
-4. The backend talks to Ollama for model responses.
+4. The backend talks to Ollama (dev/local) or OpenClaw (prod) for model responses.
 
 ## Services
 
@@ -45,7 +45,8 @@ If you want to create the key only when missing, use:
 |---|---|---|
 | frontend | React app served by Nginx / Vite dev server | 8080 / 5173 |
 | backend | ASP.NET Core API + agent | 5008 |
-| ollama | Local model runtime | 11434 |
+| ollama (dev) | Local model runtime (dev) | 11434 |
+| openclaw (prod) | Local model runtime (prod) | 18789 |
 
 ## Notes
 
