@@ -1,0 +1,34 @@
+name: Smoke Tests
+
+on:
+  repository_dispatch:
+    types: [run-smoke-tests]
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run backend health check
+        env:
+          BACKEND_URL: ${{ secrets.SMOKE_BACKEND_URL }}
+        run: |
+          if [ -z "$BACKEND_URL" ]; then echo "SMOKE_BACKEND_URL not set"; exit 1; fi
+          echo "Checking $BACKEND_URL/health"
+          status=$(curl -s -o /dev/stderr -w "%{http_code}" "$BACKEND_URL/health" || true)
+          echo "HTTP status: $status"
+          if [ "$status" != "200" ]; then exit 1; fi
+
+      - name: Run frontend smoke check
+        env:
+          FRONTEND_URL: ${{ secrets.SMOKE_FRONTEND_URL }}
+        run: |
+          if [ -z "$FRONTEND_URL" ]; then echo "SMOKE_FRONTEND_URL not set"; exit 1; fi
+          status=$(curl -s -o /dev/null -w "%{http_code}" "$FRONTEND_URL" || true)
+          echo "HTTP status: $status"
+          if [ "$status" != "200" ]; then exit 1; fi
+
+      - name: Report success
+        run: echo "Smoke tests passed"

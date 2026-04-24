@@ -1,4 +1,4 @@
-const BASE_URL = 'https://localhost:7017'
+const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? ''
 
 function getToken(): string | null {
   return localStorage.getItem('gymtracker_token')

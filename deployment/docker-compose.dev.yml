@@ -1,0 +1,54 @@
+services:
+  backend:
+    build:
+      context: ..
+      dockerfile: deployment/backend.dev.Dockerfile
+    working_dir: /workspace
+    ports:
+      - "5008:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      DOTNET_USE_POLLING_FILE_WATCHER: "1"
+      ConnectionStrings__DefaultConnection: "${DEFAULT_CONNECTION:-Data Source=/data/gymtracker.db}"
+      ConnectionStrings__DefaultConnectionAI: "${DEFAULT_CONNECTION_AI:-Data Source=/data/gymtracker_ai.db}"
+      Jwt__Key: "${JWT__KEY:-change-me-local-dev}"
+      Jwt__Issuer: "${JWT__ISSUER:-GymTracker}"
+      Jwt__Audience: "${JWT__AUDIENCE:-GymTracker}"
+      FitnessAgent__GitHubToken: "${FITNESS_AGENT__GITHUBTOKEN:-ollama}"
+      FitnessAgent__ModelId: "${FITNESS_AGENT__MODELID:-qwen2.5:7b}"
+      FitnessAgent__Endpoint: "${FITNESS_AGENT__ENDPOINT:-http://ollama:11434}"
+    volumes:
+      - ..:/workspace
+      - gymtracker-data:/data
+      - nuget-packages:/root/.nuget/packages
+    depends_on:
+      - ollama
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: deployment/frontend.dev.Dockerfile
+    working_dir: /app
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_PROXY_TARGET: "${VITE_API_PROXY_TARGET:-http://backend:8080}"
+      CHOKIDAR_USEPOLLING: "true"
+    volumes:
+      - ..:/app
+      - frontend-node-modules:/app/node_modules
+    depends_on:
+      - backend
+
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+
+volumes:
+  gymtracker-data:
+  ollama-data:
+  nuget-packages:
+  frontend-node-modules:

@@ -1,0 +1,41 @@
+services:
+  backend:
+    build:
+      context: ..
+      dockerfile: deployment/backend.Dockerfile
+    ports:
+      - "5008:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: "${DEFAULT_CONNECTION:-Data Source=/data/gymtracker.db}"
+      ConnectionStrings__DefaultConnectionAI: "${DEFAULT_CONNECTION_AI:-Data Source=/data/gymtracker_ai.db}"
+      Jwt__Key: "${JWT__KEY:-change-me-before-prod}"
+      Jwt__Issuer: "${JWT__ISSUER:-GymTracker}"
+      Jwt__Audience: "${JWT__AUDIENCE:-GymTracker}"
+      FitnessAgent__GitHubToken: "${FITNESS_AGENT__GITHUBTOKEN:-ollama}"
+      FitnessAgent__ModelId: "${FITNESS_AGENT__MODELID:-qwen2.5:7b}"
+      FitnessAgent__Endpoint: "${FITNESS_AGENT__ENDPOINT:-http://ollama:11434}"
+    volumes:
+      - gymtracker-data:/data
+    depends_on:
+      - ollama
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: deployment/frontend.Dockerfile
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+
+volumes:
+  gymtracker-data:
+  ollama-data:
