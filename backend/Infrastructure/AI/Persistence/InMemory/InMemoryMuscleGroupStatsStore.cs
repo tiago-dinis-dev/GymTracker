@@ -16,6 +16,15 @@ public class InMemoryMuscleGroupStatsStore  : IMuscleGroupStatsStore
         return Task.FromResult(stats);
     }
 
+    public Task<IReadOnlyList<MuscleGroupStats>> GetAllByUserIdAsync(Guid userId, CancellationToken ct)
+    {
+        IReadOnlyList<MuscleGroupStats> result = _stats
+            .Where(kv => kv.Key.Item1 == userId)
+            .Select(kv => kv.Value)
+            .ToList();
+        return Task.FromResult(result);
+    }
+
     public Task UpsertAsync(MuscleGroupStats stats, CancellationToken ct)
     {
         _stats[(stats.UserId, stats.MuscleGroup)] = stats;

@@ -30,10 +30,12 @@ public static class DependencyInjection
         services.AddScoped<IExerciseRepository, ExerciseRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IAIObservationStore, AIObservationStore>();
+        services.AddScoped<IWorkoutHistoryQuery, WorkoutHistoryQuery>();
 
-        services.AddSingleton<IWorkoutStatsStore, InMemoryWorkoutStatsStore>();
-        services.AddSingleton<IExerciseStatsStore, InMemoryExerciseStatsStore>();
-        services.AddSingleton<IMuscleGroupStatsStore, InMemoryMuscleGroupStatsStore>();
+        // Persist derived stats from observations using the AI observation DB
+        services.AddScoped<IWorkoutStatsStore, WorkoutStatsDbStore>();
+        services.AddScoped<IExerciseStatsStore, ExerciseStatsDbStore>();
+        services.AddScoped<IMuscleGroupStatsStore, MuscleGroupStatsDbStore>();
         services.AddSingleton<IAIObservationQueue, InMemoryAIObservationQueue>();
 
         services.AddScoped<IFitnessAgentService, FitnessAgentService>();

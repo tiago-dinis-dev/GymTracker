@@ -6,6 +6,8 @@ Arms, Legs and Abs. Use this skill to detect imbalances that could lead to injur
 problems, or aesthetic asymmetry.
 
 ## When to use
+Always use **get_all_muscle_group_stats** to retrieve all muscle groups in a single call instead
+of querying each group individually. This ensures no group is missed and reduces latency.
 Use this skill after gathering workout and exercise data to evaluate whether the user trains
 muscle groups in a balanced way. It is essential for generating structural advice about training
 program design.

@@ -35,12 +35,43 @@ public sealed class ExerciseStatsPlugin(IExerciseStatsStore store) : AgentClassS
         if (!Guid.TryParse(userId, out var id))
             return "Invalid userId format.";
 
-        var stats = await store.GetByUserIdAndExerciseNameAsync(id, exerciseName, cancellationToken);
+        try
+        {
+            var stats = await store.GetByUserIdAndExerciseNameAsync(id, exerciseName, cancellationToken);
+            if (stats is null)
+                return $"No stats found for exercise '{exerciseName}' for this user.";
+            return JsonSerializer.Serialize(stats);
+        }
+        catch (Exception ex)
+        {
+            return $"Error retrieving exercise stats: {ex.Message}";
+        }
+    }
 
-        if (stats is null)
-            return $"No stats found for exercise '{exerciseName}' for this user.";
+    [AgentSkillScript("get_all_exercise_stats")]
+    [Description(
+        "Retrieves performance statistics for ALL exercises performed by a user. Returns a list of " +
+        "exercise names with their total sets, total reps, total volume and average weight. " +
+        "Use this before get_exercise_stats to discover which exercises the user has data for, " +
+        "avoiding guesswork on exercise names.")]
+    public async Task<string> GetAllExerciseStatsAsync(
+        [Description("The user's unique identifier (GUID string).")] string userId,
+        CancellationToken cancellationToken = default)
+    {
+        if (!Guid.TryParse(userId, out var id))
+            return "Invalid userId format.";
 
-        return JsonSerializer.Serialize(stats);
+        try
+        {
+            var stats = await store.GetAllByUserIdAsync(id, cancellationToken);
+            if (stats.Count == 0)
+                return "No exercise stats found for this user.";
+            return JsonSerializer.Serialize(stats);
+        }
+        catch (Exception ex)
+        {
+            return $"Error retrieving all exercise stats: {ex.Message}";
+        }
     }
 
     private static string LoadInstructions(string resourceName)

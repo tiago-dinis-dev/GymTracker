@@ -9,6 +9,7 @@ Recommended secrets to set in GitHub (Repository Settings -> Secrets -> Actions)
 - RENDER_SERVICE_ID
 - DEFAULT_CONNECTION  (connection string for EF migrations)
 - JWT__KEY (production JWT signing key)
+- FITNESS_AGENT__APIKEY
 - FITNESS_AGENT__MODELID
 - FITNESS_AGENT__ENDPOINT
 - SMOKE_BACKEND_URL

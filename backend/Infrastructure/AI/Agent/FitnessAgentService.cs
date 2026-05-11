@@ -4,6 +4,7 @@ using Application.AI.Abstractions;
 using Application.Common.Interfaces.Store;
 using Common.AI.Models;
 using Infrastructure.AI.Agent.Skills;
+using Infrastructure.AI.Persistence;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
@@ -21,6 +22,8 @@ public sealed class FitnessAgentService(
     IWorkoutStatsStore workoutStatsStore,
     IExerciseStatsStore exerciseStatsStore,
     IMuscleGroupStatsStore muscleGroupStatsStore,
+    IWorkoutHistoryQuery workoutHistoryQuery,
+    AIObservationDbContext? aiObservationDbContext,
     IOptions<AgentOptions> options,
     ILogger<FitnessAgentService> logger) : IFitnessAgentService
 {
@@ -36,18 +39,19 @@ public sealed class FitnessAgentService(
         logger.LogDebug("Building agent (endpoint={Endpoint}, model={Model})", opts.Endpoint, opts.ModelId);
 
         var openAIClient = new OpenAIClient(
-            new ApiKeyCredential(opts.GitHubToken),
+            new ApiKeyCredential(opts.ApiKey),
             new OpenAIClientOptions
             {
                 Endpoint = new Uri(opts.Endpoint),
-                NetworkTimeout = TimeSpan.FromMinutes(5),
-                RetryPolicy = new ClientRetryPolicy(maxRetries: 0)
+                NetworkTimeout = TimeSpan.FromMinutes(4),
+                RetryPolicy = new ClientRetryPolicy(maxRetries: 2)
             });
 
         var skillsProvider = new AgentSkillsProvider(
-            new WorkoutStatsPlugin(workoutStatsStore),
+            new WorkoutStatsPlugin(workoutStatsStore, aiObservationDbContext),
             new ExerciseStatsPlugin(exerciseStatsStore),
-            new MuscleGroupStatsPlugin(muscleGroupStatsStore));
+            new MuscleGroupStatsPlugin(muscleGroupStatsStore),
+            new WorkoutHistoryPlugin(workoutHistoryQuery));
 
         var agent = openAIClient
             .GetChatClient(opts.ModelId)
@@ -70,12 +74,18 @@ public sealed class FitnessAgentService(
 
             response = await agent.RunAsync(
                 $"Analyze the fitness data for user {userId}. " +
-                "Use all available skills to collect workout stats, exercise stats for common movements, " +
-                "and stats for every muscle group. Then produce a comprehensive personalized fitness insight.",
+                "Always follow all these steps — do not skip any: " +
+                "1) Call get_workout_stats for an overall training summary. " +
+                "2) Call get_all_exercise_stats to get aggregated stats for all exercises performed. " +
+                "3) Call get_all_muscle_group_stats to get aggregated stats for all muscle groups. " +
+                "4) Call get_workout_history to retrieve the most recent completed workouts with full exercise detail. " +
+                "5) Combine and cross-reference the aggregated stats with the raw workout history to produce a comprehensive, personalized fitness insight. " +
+                "The raw history reveals recent patterns and session-level detail; the aggregated stats show long-term trends. Use both together.",
                 cancellationToken: ct);
 
             sw.Stop();
             logger.LogInformation("Agent invocation completed in {Ms}ms", sw.ElapsedMilliseconds);
+            logger.LogDebug("Agent raw response for user {UserId}: {Response}", userId, response.Text);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {

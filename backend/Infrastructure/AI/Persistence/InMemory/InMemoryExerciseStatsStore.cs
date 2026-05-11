@@ -13,6 +13,15 @@ public class InMemoryExerciseStatsStore : IExerciseStatsStore
         return Task.FromResult(stats);
     }
 
+    public Task<IReadOnlyList<ExerciseStats>> GetAllByUserIdAsync(Guid userId, CancellationToken cancellationToken)
+    {
+        IReadOnlyList<ExerciseStats> result = _store
+            .Where(kv => kv.Key.Item1 == userId)
+            .Select(kv => kv.Value)
+            .ToList();
+        return Task.FromResult(result);
+    }
+
     public Task UpsertAsync(ExerciseStats stats, CancellationToken cancellationToken)
     {
         _store[(stats.UserId, stats.ExerciseName)] = stats;

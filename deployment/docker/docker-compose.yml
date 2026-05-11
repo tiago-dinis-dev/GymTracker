@@ -12,13 +12,11 @@ services:
       Jwt__Key: "${JWT__KEY:-change-me-before-prod}"
       Jwt__Issuer: "${JWT__ISSUER:-GymTracker}"
       Jwt__Audience: "${JWT__AUDIENCE:-GymTracker}"
-      FitnessAgent__GitHubToken: "${OPENCLAW_GATEWAY_TOKEN:-openclaw}"
-      FitnessAgent__ModelId: "${FITNESS_AGENT__MODELID:-qwen2.5:7b}"
-      FitnessAgent__Endpoint: "${FITNESS_AGENT__ENDPOINT:-http://openclaw:18789}"
+      FitnessAgent__ApiKey: "${FITNESS_AGENT__APIKEY}"
+      FitnessAgent__ModelId: "${FITNESS_AGENT__MODELID:-gemma4:31b-cloud}"
+      FitnessAgent__Endpoint: "${FITNESS_AGENT__ENDPOINT:-https://ollama.com/v1}"
     volumes:
       - gymtracker-data:/data
-    depends_on:
-      - ollama
 
   frontend:
     build:
@@ -29,13 +27,5 @@ services:
     depends_on:
       - backend
 
-  ollama:
-    image: openclaw/openclaw:latest
-    ports:
-      - "18789:18789"
-    volumes:
-      - openclaw-data:/root/.openclaw
-
 volumes:
   gymtracker-data:
-  openclaw-data:

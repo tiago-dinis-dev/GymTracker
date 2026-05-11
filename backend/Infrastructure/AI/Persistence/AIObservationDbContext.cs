@@ -1,4 +1,6 @@
-﻿using Common.AI.Observations;
+﻿using Common.AI.Models;
+using Common.AI.Observations;
+using Common.Exercises;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.AI.Persistence;
@@ -7,6 +9,8 @@ public class AIObservationDbContext(DbContextOptions<AIObservationDbContext> opt
 {
     public DbSet<WorkoutCompletedObservation> WorkoutCompletedObservations { get; set; } = null!;
     public DbSet<ExerciseAddedObservation> ExerciseAddedObservations { get; set; } = null!;
+    public DbSet<ExerciseStats> ExerciseStats { get; set; } = null!;
+    public DbSet<MuscleGroupStats> MuscleGroupStats { get; set; } = null!;
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -39,6 +43,20 @@ public class AIObservationDbContext(DbContextOptions<AIObservationDbContext> opt
                     sb.Property(s => s.Estimated1Rm).IsRequired();
                 });
             });
+        });
+
+        modelBuilder.Entity<ExerciseStats>(entity =>
+        {
+            entity.ToTable("ExerciseStats");
+            entity.HasKey(e => new { e.UserId, e.ExerciseName });
+            entity.Property(e => e.MuscleGroup).HasConversion<string>();
+        });
+
+        modelBuilder.Entity<MuscleGroupStats>(entity =>
+        {
+            entity.ToTable("MuscleGroupStats");
+            entity.HasKey(e => new { e.UserId, e.MuscleGroup });
+            entity.Property(e => e.MuscleGroup).HasConversion<string>();
         });
     }
 }

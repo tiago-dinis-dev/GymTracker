@@ -39,12 +39,42 @@ public sealed class MuscleGroupStatsPlugin(IMuscleGroupStatsStore store) : Agent
         if (!Enum.TryParse<MuscleGroup>(muscleGroup, ignoreCase: true, out var group))
             return $"Invalid muscle group '{muscleGroup}'. Valid values: Chest, Back, Shoulders, Arms, Legs, Abs.";
 
-        var stats = await store.GetByUserAndMuscleGroupAsync(id, group, cancellationToken);
+        try
+        {
+            var stats = await store.GetByUserAndMuscleGroupAsync(id, group, cancellationToken);
+            if (stats is null)
+                return $"No stats found for muscle group '{muscleGroup}' for this user.";
+            return JsonSerializer.Serialize(stats);
+        }
+        catch (Exception ex)
+        {
+            return $"Error retrieving muscle group stats: {ex.Message}";
+        }
+    }
 
-        if (stats is null)
-            return $"No stats found for muscle group '{muscleGroup}' for this user.";
+    [AgentSkillScript("get_all_muscle_group_stats")]
+    [Description(
+        "Retrieves training volume and intensity statistics for ALL muscle groups for a user in a single call. " +
+        "Returns total exercises, total volume, total sets, total reps and average intensity per group. " +
+        "Prefer this over calling get_muscle_group_stats individually to get a complete picture at once.")]
+    public async Task<string> GetAllMuscleGroupStatsAsync(
+        [Description("The user's unique identifier (GUID string).")] string userId,
+        CancellationToken cancellationToken = default)
+    {
+        if (!Guid.TryParse(userId, out var id))
+            return "Invalid userId format.";
 
-        return JsonSerializer.Serialize(stats);
+        try
+        {
+            var stats = await store.GetAllByUserIdAsync(id, cancellationToken);
+            if (stats.Count == 0)
+                return "No muscle group stats found for this user.";
+            return JsonSerializer.Serialize(stats);
+        }
+        catch (Exception ex)
+        {
+            return $"Error retrieving all muscle group stats: {ex.Message}";
+        }
     }
 
     private static string LoadInstructions(string resourceName)

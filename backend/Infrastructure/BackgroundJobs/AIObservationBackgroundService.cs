@@ -10,14 +10,9 @@ using Microsoft.Extensions.Logging;
 namespace Infrastructure.BackgroundJobs;
 
 public class AIObservationBackgroundService(IAIObservationQueue aiObservationQueue, IServiceProvider serviceProvider, 
-    ILogger<AIObservationBackgroundService> logger, 
-    IWorkoutStatsStore workoutStatsStore, IExerciseStatsStore exerciseStatsStore,
-    IMuscleGroupStatsStore muscleGroupStatsStore) : BackgroundService
+    ILogger<AIObservationBackgroundService> logger) : BackgroundService
 {
     private readonly IAIObservationQueue _aiObservationQueue = aiObservationQueue;
-    private readonly IWorkoutStatsStore _workoutStatsStore = workoutStatsStore;
-    private readonly IExerciseStatsStore _exerciseStatsStore = exerciseStatsStore;
-    private readonly IMuscleGroupStatsStore _muscleGroupStatsStore = muscleGroupStatsStore;
     private readonly IServiceProvider _serviceProvider = serviceProvider;
     private readonly ILogger<AIObservationBackgroundService> _logger = logger;
 
@@ -31,13 +26,14 @@ public class AIObservationBackgroundService(IAIObservationQueue aiObservationQue
 
                 using var scope = _serviceProvider.CreateScope();
                 var store = scope.ServiceProvider.GetRequiredService<IAIObservationStore>();
+                var workoutStatsStore = scope.ServiceProvider.GetRequiredService<IWorkoutStatsStore>();
+                var exerciseStatsStore = scope.ServiceProvider.GetRequiredService<IExerciseStatsStore>();
+                var muscleGroupStatsStore = scope.ServiceProvider.GetRequiredService<IMuscleGroupStatsStore>();
 
                 switch (observation)
                 {
                     case WorkoutCompletedObservation wco:
-                        await store.AddAsync(wco, stoppingToken);
-
-                        var currentStats = await _workoutStatsStore.GetByUserIdAsync(wco.UserId, stoppingToken) 
+                        var currentStats = await workoutStatsStore.GetByUserIdAsync(wco.UserId, stoppingToken) 
                             ?? new UserWorkoutStats(
                                UserId: wco.UserId,
                                TotalWorkouts: 0,
@@ -49,19 +45,20 @@ public class AIObservationBackgroundService(IAIObservationQueue aiObservationQue
                             );
                         var updatedStats = WorkoutStatsCalculator.Update(currentStats, wco);
 
-                        await _workoutStatsStore.UpsertAsync(updatedStats, stoppingToken);
+                        await store.AddAsync(wco, stoppingToken);
+                        await workoutStatsStore.UpsertAsync(updatedStats, stoppingToken);
                         break;
 
                     case ExerciseAddedObservation eao:
-                        await store.AddAsync(eao, stoppingToken);
-
-                        var currentExerciseStats = await _exerciseStatsStore.GetByUserIdAndExerciseNameAsync(eao.UserId, eao.Metadata?.Name ?? string.Empty, stoppingToken);
+                        var currentExerciseStats = await exerciseStatsStore.GetByUserIdAndExerciseNameAsync(eao.UserId, eao.Metadata?.Name ?? string.Empty, stoppingToken);
                         var updatedExerciseStats = ExerciseStatsCalculator.Update(currentExerciseStats, eao);
-                        await _exerciseStatsStore.UpsertAsync(updatedExerciseStats, stoppingToken);
 
-                        var currentMuscleGroupStats = await _muscleGroupStatsStore.GetByUserAndMuscleGroupAsync(eao.UserId, eao.MuscleGroup, stoppingToken);
+                        var currentMuscleGroupStats = await muscleGroupStatsStore.GetByUserAndMuscleGroupAsync(eao.UserId, eao.MuscleGroup, stoppingToken);
                         var updatedMuscleGroupStats = MuscleGroupStatsCalculator.Update(currentMuscleGroupStats, eao);
-                        await _muscleGroupStatsStore.UpsertAsync(updatedMuscleGroupStats, stoppingToken);
+
+                        await store.AddAsync(eao, stoppingToken);
+                        await exerciseStatsStore.UpsertAsync(updatedExerciseStats, stoppingToken);
+                        await muscleGroupStatsStore.UpsertAsync(updatedMuscleGroupStats, stoppingToken);
 
                         break;
 

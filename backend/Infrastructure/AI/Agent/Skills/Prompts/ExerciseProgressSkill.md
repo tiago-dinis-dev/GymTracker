@@ -6,9 +6,10 @@ average weight for a given exercise. Use this skill to detect strength progressi
 or overtraining on specific movements.
 
 ## When to use
-Use this skill when you need to evaluate progress on individual exercises, compare performance
-across movements, or identify which exercises the user focuses on most. Pair with the Muscle
-Group Balance skill to verify exercise selection supports balanced development.
+Always start with **get_all_exercise_stats** to discover which exercises the user has data for.
+This avoids guessing exercise names and missing data. Only call **get_exercise_stats** afterwards
+if you need to drill into a specific exercise not already covered by the bulk result.
+Pair with the Muscle Group Balance skill to verify exercise selection supports balanced development.
 
 ## Interpretation guidance
 - High TotalVolume + low AverageWeight → high rep / endurance focus.

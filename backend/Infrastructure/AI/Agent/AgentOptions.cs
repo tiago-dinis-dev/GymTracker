@@ -4,7 +4,7 @@ public sealed class AgentOptions
 {
     public const string SectionName = "FitnessAgent";
 
-    public string GitHubToken { get; set; } = string.Empty;
-    public string ModelId { get; set; } = "qwen2.5:7b";
-    public string Endpoint { get; set; } = "http://localhost:11434";
+    public string ApiKey { get; set; } = "ollama";
+    public string ModelId { get; set; } = "gemma4:31b-cloud";
+    public string Endpoint { get; set; } = "http://localhost:11434/v1";
 }

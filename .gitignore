@@ -392,8 +392,8 @@ MigrationBackup/
 FodyWeavers.xsd
 /Api/Properties/launchSettings.json
 /DiagramDBContext.md
-/deployment/.env
 /deployment/update-jwt-key.ps1
 /deployment/start-dev.ps1
 /deployment/start-prod.ps1
 /deployment/ensure-jwt-key.ps1
+deployment/scripts/.env
