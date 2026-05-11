@@ -16,10 +16,12 @@ jobs:
         with:
           dotnet-version: '10.0.x'
       - name: Restore & build
+        working-directory: backend
         run: |
           dotnet restore
           dotnet build --no-restore -c Release
       - name: Run tests
+        working-directory: backend
         run: |
           dotnet test --no-build -c Release
 
@@ -29,23 +31,34 @@ jobs:
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev'
     steps:
       - uses: actions/checkout@v5
+
+      - name: Resolve environment config
+        id: env
+        run: |
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            echo "render_service_id=${{ secrets.RENDER_SERVICE_ID_PROD }}" >> $GITHUB_OUTPUT
+          else
+            echo "render_service_id=${{ secrets.RENDER_SERVICE_ID_DEV }}" >> $GITHUB_OUTPUT
+          fi
+
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Build and push image
         env:
           IMAGE: ghcr.io/${{ github.repository_owner }}/gymtracker-api:${{ github.ref_name }}
         run: |
-          docker build -f backend/Api/Dockerfile -t $IMAGE backend/Api
-          echo $IMAGE
+          docker build -f deployment/docker/backend.Dockerfile -t $IMAGE .
           docker push $IMAGE
-      - name: Trigger Render deploy (optional)
+
+      - name: Trigger Render deploy
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
-          RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
+          RENDER_SERVICE_ID: ${{ steps.env.outputs.render_service_id }}
         run: |
           if [ -z "$RENDER_API_KEY" ] || [ -z "$RENDER_SERVICE_ID" ]; then
             echo "Render secrets not configured, skipping deploy"; exit 0
@@ -61,13 +74,24 @@ jobs:
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev'
     steps:
       - uses: actions/checkout@v5
+
+      - name: Resolve environment config
+        id: env
+        run: |
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            echo "db_connection=${{ secrets.DEFAULT_CONNECTION_PROD }}" >> $GITHUB_OUTPUT
+          else
+            echo "db_connection=${{ secrets.DEFAULT_CONNECTION_DEV }}" >> $GITHUB_OUTPUT
+          fi
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: '10.0.x'
-      - name: Run EF Migrations (if needed)
+
+      - name: Run EF Migrations
         env:
-          ConnectionStrings__DefaultConnection: ${{ secrets.DEFAULT_CONNECTION }}
+          ConnectionStrings__DefaultConnection: ${{ steps.env.outputs.db_connection }}
         run: |
           cd backend/Api
           dotnet tool restore || true

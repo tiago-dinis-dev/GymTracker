@@ -4,6 +4,13 @@ on:
   repository_dispatch:
     types: [run-smoke-tests]
   workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'dev'
+        type: choice
+        options: [ dev, prod ]
 
 jobs:
   smoke:
@@ -11,11 +18,23 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      - name: Resolve environment URLs
+        id: env
+        run: |
+          ENV="${{ github.event.client_payload.environment || github.event.inputs.environment || 'dev' }}"
+          if [ "$ENV" = "prod" ]; then
+            echo "backend_url=${{ secrets.SMOKE_BACKEND_URL_PROD }}" >> $GITHUB_OUTPUT
+            echo "frontend_url=${{ secrets.SMOKE_FRONTEND_URL_PROD }}" >> $GITHUB_OUTPUT
+          else
+            echo "backend_url=${{ secrets.SMOKE_BACKEND_URL_DEV }}" >> $GITHUB_OUTPUT
+            echo "frontend_url=${{ secrets.SMOKE_FRONTEND_URL_DEV }}" >> $GITHUB_OUTPUT
+          fi
+
       - name: Run backend health check
         env:
-          BACKEND_URL: ${{ secrets.SMOKE_BACKEND_URL }}
+          BACKEND_URL: ${{ steps.env.outputs.backend_url }}
         run: |
-          if [ -z "$BACKEND_URL" ]; then echo "SMOKE_BACKEND_URL not set"; exit 1; fi
+          if [ -z "$BACKEND_URL" ]; then echo "Backend URL not set"; exit 1; fi
           echo "Checking $BACKEND_URL/health"
           status=$(curl -s -o /dev/stderr -w "%{http_code}" "$BACKEND_URL/health" || true)
           echo "HTTP status: $status"
@@ -23,9 +42,9 @@ jobs:
 
       - name: Run frontend smoke check
         env:
-          FRONTEND_URL: ${{ secrets.SMOKE_FRONTEND_URL }}
+          FRONTEND_URL: ${{ steps.env.outputs.frontend_url }}
         run: |
-          if [ -z "$FRONTEND_URL" ]; then echo "SMOKE_FRONTEND_URL not set"; exit 1; fi
+          if [ -z "$FRONTEND_URL" ]; then echo "Frontend URL not set"; exit 1; fi
           status=$(curl -s -o /dev/null -w "%{http_code}" "$FRONTEND_URL" || true)
           echo "HTTP status: $status"
           if [ "$status" != "200" ]; then exit 1; fi

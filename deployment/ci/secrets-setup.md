@@ -6,14 +6,18 @@ Recommended secrets to set in GitHub (Repository Settings -> Secrets -> Actions)
 - VERCEL_ORG_ID
 - VERCEL_PROJECT_ID
 - RENDER_API_KEY
-- RENDER_SERVICE_ID
-- DEFAULT_CONNECTION  (connection string for EF migrations)
+- RENDER_SERVICE_ID_DEV   (Render service ID for the dev environment)
+- RENDER_SERVICE_ID_PROD  (Render service ID for the prod environment)
+- DEFAULT_CONNECTION_DEV  (connection string for dev DB / EF migrations)
+- DEFAULT_CONNECTION_PROD (connection string for prod DB / EF migrations)
 - JWT__KEY (production JWT signing key)
-- FITNESS_AGENT__APIKEY
-- FITNESS_AGENT__MODELID
-- FITNESS_AGENT__ENDPOINT
-- SMOKE_BACKEND_URL
-- SMOKE_FRONTEND_URL
+- FITNESS_AGENT__APIKEY   (Ollama API key from ollama.com/settings/keys)
+- FITNESS_AGENT__MODELID  (optional override, defaults to gemma4:31b-cloud)
+- FITNESS_AGENT__ENDPOINT (optional override, defaults to https://ollama.com/v1)
+- SMOKE_BACKEND_URL_DEV
+- SMOKE_BACKEND_URL_PROD
+- SMOKE_FRONTEND_URL_DEV
+- SMOKE_FRONTEND_URL_PROD
 
 Use the GitHub CLI to set secrets locally:
 
