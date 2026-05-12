@@ -8,6 +8,7 @@ import WorkoutLog from './pages/WorkoutLog'
 import NewWorkout from './pages/NewWorkout'
 import Exercises from './pages/Exercises'
 import Login from './pages/Login'
+import Register from './pages/Register'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth()
@@ -22,6 +23,7 @@ function AppRoutes() {
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/workouts" element={<ProtectedRoute><WorkoutLog /></ProtectedRoute>} />
           <Route path="/workout/new" element={<ProtectedRoute><NewWorkout /></ProtectedRoute>} />

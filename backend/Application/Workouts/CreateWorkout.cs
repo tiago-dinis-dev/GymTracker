@@ -19,6 +19,7 @@ public class CreateWorkoutHandler(IWorkoutRepository workoutRepository, ICacheSe
         var existingWorkouts = await _workoutRepo.GetWorkoutsByUserIdAsync(userId);
 
         await ValiadeIfOnGoingWorkouts(existingWorkouts);
+        ValidateCooldown(existingWorkouts);
 
         var workout = new Workout(userId, command.Date);
 
@@ -45,6 +46,12 @@ public class CreateWorkoutHandler(IWorkoutRepository workoutRepository, ICacheSe
         {
             throw new ArgumentException("A workout already exists for the selected date or within the two-hour window.");
         }
+    }
+
+    private static void ValidateCooldown(List<Workout> existingWorkouts)
+    {
+        if (existingWorkouts.Any(w => w.Status == WorkoutStatus.Completed && w.Date.AddHours(2) > DateTime.UtcNow))
+            throw new ArgumentException("You must wait 2 hours before starting a new workout.");
     }
 
     private static async Task ValiadeIfOnGoingWorkouts(List<Workout> existingWorkouts)

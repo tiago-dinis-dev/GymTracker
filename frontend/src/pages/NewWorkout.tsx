@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Plus, Trash2, CheckCircle, Loader2, AlertCircle, Dumbbell, Search } from 'lucide-react'
 import { api } from '../lib/api'
-import type { ExerciseDto, SetInfo, CreateWorkoutResult } from '../lib/api'
+import type { ExerciseDto, SetInfo, CreateWorkoutResult, CompleteWorkoutResult } from '../lib/api'
 
 interface SetDraft {
   reps: string
@@ -40,6 +40,7 @@ export default function NewWorkout() {
 
   const [logged, setLogged] = useState<LoggedExercise[]>([])
   const [completing, setCompleting] = useState(false)
+  const [completionResult, setCompletionResult] = useState<{ duration: string } | null>(null)
 
   useEffect(() => {
     Promise.all([api.getInProgressWorkout(), api.getExercises()])
@@ -118,12 +119,25 @@ export default function NewWorkout() {
     }
   }
 
+  function formatDuration(startIso: string, endIso: string): string {
+    const diffMs = new Date(endIso).getTime() - new Date(startIso).getTime()
+    const totalSecs = Math.floor(diffMs / 1000)
+    const hours = Math.floor(totalSecs / 3600)
+    const mins = Math.floor((totalSecs % 3600) / 60)
+    const secs = totalSecs % 60
+    if (hours > 0) return `${hours}h ${mins}m ${secs}s`
+    if (mins > 0) return `${mins}m ${secs}s`
+    return `${secs}s`
+  }
+
   async function handleComplete() {
     if (!workout) return
     setCompleting(true)
     try {
-      await api.completeWorkout(workout.workoutId)
-      navigate('/workouts')
+      const result: CompleteWorkoutResult = await api.completeWorkout(workout.workoutId)
+      const duration = formatDuration(workout.date, result.completedAt)
+      setCompletionResult({ duration })
+      setTimeout(() => navigate('/workouts'), 4000)
     } catch (err: unknown) {
       setCreateError(err instanceof Error ? err.message : 'Failed to complete workout.')
       setCompleting(false)
@@ -162,7 +176,7 @@ export default function NewWorkout() {
         </div>
         <button
           onClick={handleComplete}
-          disabled={completing || logged.length === 0}
+          disabled={completing || logged.length === 0 || !!completionResult}
           className="flex items-center gap-2 bg-cta hover:bg-green-400 text-white font-heading font-bold text-sm uppercase tracking-wide px-6 py-3 rounded-xl transition-colors duration-200 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {completing ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
@@ -319,6 +333,19 @@ export default function NewWorkout() {
           )}
         </div>
       </div>
+
+      {/* Completion popup */}
+      {completionResult && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="bg-surface border border-cta/40 rounded-2xl px-10 py-10 flex flex-col items-center gap-4 shadow-2xl animate-fade-in max-w-sm w-full mx-4">
+            <CheckCircle className="w-16 h-16 text-cta" />
+            <h2 className="font-heading text-3xl font-black text-foreground uppercase text-center">Workout Complete!</h2>
+            <p className="text-muted font-body text-center text-sm">Total time</p>
+            <span className="font-heading text-4xl font-black text-cta">{completionResult.duration}</span>
+            <p className="text-muted font-body text-xs text-center">Redirecting to your workouts…</p>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

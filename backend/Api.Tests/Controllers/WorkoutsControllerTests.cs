@@ -43,7 +43,7 @@ public class WorkoutsControllerTests
     }
 
     [Fact]
-    public async Task CompleteWorkout_ValidWorkout_ReturnsNoContent()
+    public async Task CompleteWorkout_ValidWorkout_ReturnsOkWithResult()
     {
         var workout = new Workout(_userId, DateTime.UtcNow);
         workout.AddExercise(Guid.NewGuid(), [new SetRecord(0, 10, 100f, 120m)]);
@@ -51,7 +51,9 @@ public class WorkoutsControllerTests
 
         var result = await _controller.CompleteWorkout(workout.Id, CancellationToken.None);
 
-        Assert.IsType<NoContentResult>(result);
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        var completeResult = Assert.IsType<CompleteWorkoutResult>(okResult.Value);
+        Assert.Equal(workout.Id, completeResult.WorkoutId);
         _workoutRepo.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 }

@@ -44,9 +44,8 @@ public class WorkoutsController(CreateWorkoutHandler createWorkoutHandler,
     [HttpPost("{workoutId}/complete")]
     public async Task<ActionResult> CompleteWorkout(Guid workoutId, CancellationToken ct)
     {
-        await _completeWorkoutHandler.HandleAsync(new CompleteWorkoutCommand(workoutId), ct);
-
-        return NoContent();
+        var result = await _completeWorkoutHandler.HandleAsync(new CompleteWorkoutCommand(workoutId), ct);
+        return Ok(result);
     }
 
     [HttpPost]

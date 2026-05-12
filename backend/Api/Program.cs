@@ -45,17 +45,8 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-if (string.IsNullOrEmpty(connectionString))
-{
-    throw new InvalidOperationException("Connection string 'DefaultConnection' is not configured.");
-}
-
-var connectionStringAI = builder.Configuration.GetConnectionString("DefaultConnectionAI");
-if (string.IsNullOrEmpty(connectionStringAI))
-{
-    throw new InvalidOperationException("Connection string 'DefaultConnectionAI' is not configured.");
-}
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? string.Empty;
+var connectionStringAI = builder.Configuration.GetConnectionString("DefaultConnectionAI") ?? string.Empty;
 
 builder.Services.AddInfrastructure(connectionString, connectionStringAI);
 builder.Services.Configure<Infrastructure.AI.Agent.AgentOptions>(
@@ -119,16 +110,33 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+// Validate connection strings after build — at this point WebApplicationFactory overrides are applied.
+if (!app.Environment.IsEnvironment("Testing"))
+{
+    if (string.IsNullOrEmpty(app.Configuration.GetConnectionString("DefaultConnection")))
+        throw new InvalidOperationException("Connection string 'DefaultConnection' is not configured.");
+    if (string.IsNullOrEmpty(app.Configuration.GetConnectionString("DefaultConnectionAI")))
+        throw new InvalidOperationException("Connection string 'DefaultConnectionAI' is not configured.");
+}
+
 using (var scope = app.Services.CreateScope())
 {
     var svc = scope.ServiceProvider;
     var gym = svc.GetRequiredService<GymTrackerDbContext>();
-
-    await gym.Database.MigrateAsync();
-    await DatabaseSeeder.SeedAsync(gym);
-
     var aiDb = svc.GetRequiredService<AIObservationDbContext>();
-    await aiDb.Database.MigrateAsync();
+
+    if (app.Environment.IsEnvironment("Testing"))
+    {
+        await gym.Database.EnsureCreatedAsync();
+        await aiDb.Database.EnsureCreatedAsync();
+    }
+    else
+    {
+        await gym.Database.MigrateAsync();
+        await aiDb.Database.MigrateAsync();
+    }
+
+    await DatabaseSeeder.SeedAsync(gym);
 }
 
 // Configure the HTTP request pipeline.
@@ -148,3 +156,6 @@ app.UseAuthorization();
 app.MapControllers();
 
 await app.RunAsync();
+
+// Required for WebApplicationFactory<Program> in integration tests
+public partial class Program { }

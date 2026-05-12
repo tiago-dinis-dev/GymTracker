@@ -97,6 +97,13 @@ export default function Login() {
             </button>
           </form>
         </div>
+
+        <p className="text-center text-muted font-body text-sm mt-6">
+          Don't have an account?{' '}
+          <Link to="/register" className="text-primary hover:text-secondary transition-colors duration-200 font-semibold">
+            Create one
+          </Link>
+        </p>
       </div>
     </div>
   )

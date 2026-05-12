@@ -88,6 +88,11 @@ export interface ExerciseDto {
   description?: string | null
 }
 
+export interface CompleteWorkoutResult {
+  workoutId: string
+  completedAt: string
+}
+
 export const api = {
   login: (email: string, password: string) =>
     request<{ token: string }>('/api/user/login', {
@@ -133,7 +138,7 @@ export const api = {
     }),
 
   completeWorkout: (workoutId: string) =>
-    request<void>(`/api/workouts/${workoutId}/complete`, {
+    request<CompleteWorkoutResult>(`/api/workouts/${workoutId}/complete`, {
       method: 'POST',
     }),
 }
