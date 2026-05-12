@@ -19,7 +19,6 @@ public class CreateWorkoutHandler(IWorkoutRepository workoutRepository, ICacheSe
         var existingWorkouts = await _workoutRepo.GetWorkoutsByUserIdAsync(userId);
 
         await ValiadeIfOnGoingWorkouts(existingWorkouts);
-        await ValidateWorkoutDate(existingWorkouts, command.Date);
 
         var workout = new Workout(userId, command.Date);
 

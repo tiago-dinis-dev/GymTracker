@@ -49,7 +49,7 @@ export default function NewWorkout() {
           setWorkout({ workoutId: inProgress.id, userId: inProgress.userId.toString(), date: inProgress.date.toString(), status: inProgress.status })
           setCreating(false)
         } else {
-          return api.createWorkout(new Date().toISOString()).then((w) => {
+          return api.createWorkout().then((w) => {
             setWorkout(w)
             setCreating(false)
           })

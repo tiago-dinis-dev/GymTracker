@@ -1,5 +1,5 @@
 # Provision GitHub secrets for GymTracker using the GitHub CLI (gh)
-# Run this from the repo root: deployment\provision-secrets.ps1
+# Run this from the repo root: deployment\scripts\provision-secrets.ps1
 # Requires: gh CLI authenticated (run `gh auth login`) and you must have repo admin rights.
 
 function Read-Secret($name, $default = '') {
@@ -12,11 +12,11 @@ function Read-Secret($name, $default = '') {
 
 Write-Host "Provisioning GitHub secrets for repository: $env:GITHUB_REPOSITORY" -ForegroundColor Cyan
 
-# Optionally read from .env.prod
-$envFile = Join-Path $PSScriptRoot ".env.prod"
+# Optionally load defaults from deployment/docs/.env.example
+$envFile = Join-Path $PSScriptRoot "..\docs\.env.example"
 $envValues = @{}
 if (Test-Path $envFile) {
-    Write-Host "Found .env.prod, loading values as defaults (will not overwrite secrets unless provided)" -ForegroundColor Green
+    Write-Host "Found .env.example, loading values as defaults" -ForegroundColor Green
     Get-Content $envFile | ForEach-Object {
         if ($_ -match '^([^#=]+)=(.*)$') { $envValues[$matches[1].Trim()] = $matches[2].Trim() }
     }
@@ -24,15 +24,16 @@ if (Test-Path $envFile) {
 
 $secrets = @(
     'VERCEL_TOKEN', 'VERCEL_ORG_ID', 'VERCEL_PROJECT_ID',
-    'RENDER_API_KEY', 'RENDER_SERVICE_ID',
-    'DEFAULT_CONNECTION', 'JWT__KEY', 'FITNESS_AGENT__MODELID', 'FITNESS_AGENT__ENDPOINT',
+    'RENDER_API_KEY', 'RENDER_SERVICE_ID_DEV', 'RENDER_SERVICE_ID_PROD',
+    'DEFAULT_CONNECTION_DEV', 'DEFAULT_CONNECTION_PROD',
+    'JWT__KEY',
     'SMOKE_BACKEND_URL', 'SMOKE_FRONTEND_URL'
 )
 
 foreach ($s in $secrets) {
     $default = $envValues[$s]
     if ($default -eq $null) { $default = '' }
-    Write-Host "\nSecret: $s" -ForegroundColor Yellow
+    Write-Host "`nSecret: $s" -ForegroundColor Yellow
     $val = Read-Secret $s $default
     if ($val -ne '') {
         Write-Host "Setting secret $s..." -ForegroundColor Gray

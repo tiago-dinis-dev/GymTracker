@@ -50,9 +50,9 @@ public class WorkoutsController(CreateWorkoutHandler createWorkoutHandler,
     }
 
     [HttpPost]
-    public async Task<IActionResult> PostWorkout([FromBody] DateTime date, CancellationToken ct)
+    public async Task<IActionResult> PostWorkout(CancellationToken ct)
     {
-        var command = new CreateWorkoutCommand(date);
+        var command = new CreateWorkoutCommand(DateTime.UtcNow);
         var result = await _createWorkoutHandler.HandleAsync(command, ct);
 
         return CreatedAtAction(

@@ -121,10 +121,9 @@ export const api = {
         return res.json() as Promise<WorkoutDetailsDto>
       }),
 
-  createWorkout:(date: string) =>
+  createWorkout: () =>
     request<CreateWorkoutResult>('/api/workouts', {
       method: 'POST',
-      body: JSON.stringify(date),
     }),
 
   addExerciseToWorkout: (workoutId: string, exerciseId: string, sets: SetInfo[]) =>
