@@ -9,7 +9,7 @@ public class GymTrackerDbContextFactory : IDesignTimeDbContextFactory<GymTracker
     {
         var optionsBuilder = new DbContextOptionsBuilder<GymTrackerDbContext>();
 
-        optionsBuilder.UseSqlite("Data Source=gymtracker.db");
+        optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=gymtracker;Username=postgres;Password=postgres");
 
         return new GymTrackerDbContext(optionsBuilder.Options);
     }

@@ -5,37 +5,99 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
 namespace Infrastructure.Migrations.AIObservationDb
 {
     [DbContext(typeof(AIObservationDbContext))]
-    [Migration("20260317161635_AddSetIndexToExerciseSets")]
-    partial class AddSetIndexToExerciseSets
+    [Migration("20260512084945_InitialCreate_AI")]
+    partial class InitialCreate_AI
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "10.0.1");
+            modelBuilder
+                .HasAnnotation("ProductVersion", "10.0.4")
+                .HasAnnotation("Relational:MaxIdentifierLength", 63);
+
+            NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("Common.AI.Models.ExerciseStats", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ExerciseName")
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("AverageWeight")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("MuscleGroup")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("TotalReps")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TotalSets")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("TotalVolume")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("UserId", "ExerciseName");
+
+                    b.ToTable("ExerciseStats", (string)null);
+                });
+
+            modelBuilder.Entity("Common.AI.Models.MuscleGroupStats", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("MuscleGroup")
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("AverageIntensity")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("TotalExercises")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TotalReps")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TotalSets")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("TotalVolume")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("UserId", "MuscleGroup");
+
+                    b.ToTable("MuscleGroupStats", (string)null);
+                });
 
             modelBuilder.Entity("Common.AI.Observations.ExerciseAddedObservation", b =>
                 {
                     b.Property<Guid>("WorkoutId")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("Timestamp")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("OrderInWorkout")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.Property<Guid>("UserId")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("uuid");
 
                     b.Property<decimal>("VolumeData")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("numeric");
 
                     b.HasKey("WorkoutId", "Timestamp");
 
@@ -45,22 +107,22 @@ namespace Infrastructure.Migrations.AIObservationDb
             modelBuilder.Entity("Common.AI.Observations.WorkoutCompletedObservation", b =>
                 {
                     b.Property<Guid>("WorkoutId")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("Timestamp")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("ExerciseCount")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.Property<TimeSpan>("TotalDuration")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("interval");
 
                     b.Property<decimal>("TotalVolume")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("numeric");
 
                     b.Property<Guid>("UserId")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("uuid");
 
                     b.HasKey("WorkoutId", "Timestamp");
 
@@ -72,22 +134,22 @@ namespace Infrastructure.Migrations.AIObservationDb
                     b.OwnsOne("Common.AI.Observations.ExerciseDetails", "Metadata", b1 =>
                         {
                             b1.Property<Guid>("ExerciseAddedObservationWorkoutId")
-                                .HasColumnType("TEXT");
+                                .HasColumnType("uuid");
 
                             b1.Property<DateTime>("ExerciseAddedObservationTimestamp")
-                                .HasColumnType("TEXT");
+                                .HasColumnType("timestamp with time zone");
 
                             b1.Property<decimal>("IntensityPercent1Rm")
-                                .HasColumnType("TEXT")
+                                .HasColumnType("numeric")
                                 .HasColumnName("IntensityPercent1Rm");
 
                             b1.Property<string>("MuscleGroup")
                                 .IsRequired()
-                                .HasColumnType("TEXT")
+                                .HasColumnType("text")
                                 .HasColumnName("MuscleGroup");
 
                             b1.Property<string>("Name")
-                                .HasColumnType("TEXT")
+                                .HasColumnType("text")
                                 .HasColumnName("ExerciseName");
 
                             b1.HasKey("ExerciseAddedObservationWorkoutId", "ExerciseAddedObservationTimestamp");
@@ -101,25 +163,27 @@ namespace Infrastructure.Migrations.AIObservationDb
                                 {
                                     b2.Property<int>("Id")
                                         .ValueGeneratedOnAdd()
-                                        .HasColumnType("INTEGER");
+                                        .HasColumnType("integer");
+
+                                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b2.Property<int>("Id"));
 
                                     b2.Property<decimal>("Estimated1Rm")
-                                        .HasColumnType("TEXT");
+                                        .HasColumnType("numeric");
 
                                     b2.Property<int>("Index")
-                                        .HasColumnType("INTEGER");
+                                        .HasColumnType("integer");
 
                                     b2.Property<int>("Reps")
-                                        .HasColumnType("INTEGER");
+                                        .HasColumnType("integer");
 
                                     b2.Property<DateTime>("Timestamp")
-                                        .HasColumnType("TEXT");
+                                        .HasColumnType("timestamp with time zone");
 
                                     b2.Property<float>("Weight")
-                                        .HasColumnType("REAL");
+                                        .HasColumnType("real");
 
                                     b2.Property<Guid>("WorkoutId")
-                                        .HasColumnType("TEXT");
+                                        .HasColumnType("uuid");
 
                                     b2.HasKey("Id");
 

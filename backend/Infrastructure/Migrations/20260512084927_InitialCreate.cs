@@ -15,25 +15,28 @@ namespace Infrastructure.Migrations
                 name: "Exercises",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
-                    MuscleGroup = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false)
+                    ExerciseId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    MuscleGroup = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    Difficulty = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
+                    Description = table.Column<string>(type: "TEXT", maxLength: 2000, nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Exercises", x => x.Id);
+                    table.PrimaryKey("PK_Exercises", x => x.ExerciseId);
                 });
 
             migrationBuilder.CreateTable(
                 name: "Users",
                 columns: table => new
                 {
-                    UserId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", maxLength: 200, nullable: false),
-                    Email = table.Column<string>(type: "TEXT", maxLength: 200, nullable: false),
-                    Weight = table.Column<float>(type: "REAL", nullable: true),
-                    Height = table.Column<float>(type: "REAL", nullable: true),
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false)
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Email = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Weight = table.Column<float>(type: "real", nullable: true),
+                    Height = table.Column<float>(type: "real", nullable: true),
+                    PasswordHash = table.Column<string>(type: "character varying(1024)", maxLength: 1024, nullable: true),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -44,14 +47,14 @@ namespace Infrastructure.Migrations
                 name: "Workouts",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    UserId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Date = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    Status = table.Column<string>(type: "TEXT", nullable: false)
+                    WorkoutId = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Date = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Status = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Workouts", x => x.Id);
+                    table.PrimaryKey("PK_Workouts", x => x.WorkoutId);
                     table.ForeignKey(
                         name: "FK_Workouts_Users_UserId",
                         column: x => x.UserId,
@@ -64,9 +67,9 @@ namespace Infrastructure.Migrations
                 name: "WorkoutExercises",
                 columns: table => new
                 {
-                    ExercisePerformedId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    ExerciseId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    WorkoutId = table.Column<Guid>(type: "TEXT", nullable: false)
+                    ExercisePerformedId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ExerciseId = table.Column<Guid>(type: "uuid", nullable: false),
+                    WorkoutId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -75,13 +78,13 @@ namespace Infrastructure.Migrations
                         name: "FK_WorkoutExercises_Exercises_ExerciseId",
                         column: x => x.ExerciseId,
                         principalTable: "Exercises",
-                        principalColumn: "Id",
+                        principalColumn: "ExerciseId",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_WorkoutExercises_Workouts_WorkoutId",
                         column: x => x.WorkoutId,
                         principalTable: "Workouts",
-                        principalColumn: "Id",
+                        principalColumn: "WorkoutId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -89,11 +92,12 @@ namespace Infrastructure.Migrations
                 name: "ExerciseSets",
                 columns: table => new
                 {
-                    SetRecordId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Reps = table.Column<int>(type: "INTEGER", nullable: false),
-                    Weight = table.Column<float>(type: "REAL", nullable: false),
-                    Estimated1Rm = table.Column<decimal>(type: "TEXT", nullable: false),
-                    ExercisePerformedId = table.Column<Guid>(type: "TEXT", nullable: false)
+                    SetRecordId = table.Column<Guid>(type: "uuid", nullable: false),
+                    SetIndex = table.Column<int>(type: "integer", nullable: false),
+                    Reps = table.Column<int>(type: "integer", nullable: false),
+                    Weight = table.Column<float>(type: "real", nullable: false),
+                    Estimated1Rm = table.Column<decimal>(type: "numeric", nullable: false),
+                    ExercisePerformedId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -107,9 +111,10 @@ namespace Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_ExerciseSets_ExercisePerformedId",
+                name: "IX_ExerciseSets_ExercisePerformedId_SetIndex",
                 table: "ExerciseSets",
-                column: "ExercisePerformedId");
+                columns: new[] { "ExercisePerformedId", "SetIndex" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Users_Email",

@@ -19,9 +19,9 @@ public static class DependencyInjection
         string connectionString, string connectionStringAI)
     {
         services.AddDbContext<GymTrackerDbContext>(options =>
-            options.UseSqlite(connectionString));
+            options.UseNpgsql(connectionString));
         services.AddDbContext<AIObservationDbContext>(options =>
-            options.UseSqlite(connectionStringAI));
+            options.UseNpgsql(connectionStringAI));
 
         services.AddHostedService<WorkoutAutoCompletionService>();
         services.AddHostedService<AIObservationBackgroundService>();

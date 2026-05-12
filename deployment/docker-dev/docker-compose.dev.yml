@@ -1,4 +1,21 @@
 services:
+  postgres:
+    image: postgres:17-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_MULTIPLE_DATABASES: gymtracker,gymtracker_ai
+    volumes:
+      - gymtracker-pg-data:/var/lib/postgresql/data
+      - ../deployment/scripts/init-multiple-dbs.sh:/docker-entrypoint-initdb.d/init-multiple-dbs.sh
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   backend:
     build:
       context: ..
@@ -9,8 +26,8 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       DOTNET_USE_POLLING_FILE_WATCHER: "1"
-      ConnectionStrings__DefaultConnection: "${DEFAULT_CONNECTION:-Data Source=/data/gymtracker.db}"
-      ConnectionStrings__DefaultConnectionAI: "${DEFAULT_CONNECTION_AI:-Data Source=/data/gymtracker_ai.db}"
+      ConnectionStrings__DefaultConnection: "${DEFAULT_CONNECTION:-Host=postgres;Port=5432;Database=gymtracker;Username=postgres;Password=postgres}"
+      ConnectionStrings__DefaultConnectionAI: "${DEFAULT_CONNECTION_AI:-Host=postgres;Port=5432;Database=gymtracker_ai;Username=postgres;Password=postgres}"
       Jwt__Key: "${JWT__KEY:-change-me-local-dev}"
       Jwt__Issuer: "${JWT__ISSUER:-GymTracker}"
       Jwt__Audience: "${JWT__AUDIENCE:-GymTracker}"
@@ -19,10 +36,12 @@ services:
       FitnessAgent__Endpoint: "${FITNESS_AGENT__ENDPOINT:-http://ollama:11434}"
     volumes:
       - ..:/workspace
-      - gymtracker-data:/data
       - nuget-packages:/root/.nuget/packages
     depends_on:
-      - ollama
+      postgres:
+        condition: service_healthy
+      ollama:
+        condition: service_started
 
   frontend:
     build:
@@ -48,7 +67,7 @@ services:
       - ollama-data:/root/.ollama
 
 volumes:
-  gymtracker-data:
+  gymtracker-pg-data:
   ollama-data:
   nuget-packages:
   frontend-node-modules:
