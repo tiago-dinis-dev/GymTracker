@@ -20,10 +20,19 @@ jobs:
         run: |
           dotnet restore
           dotnet build --no-restore -c Release
-      - name: Run tests
+      - name: Run unit tests
         working-directory: backend
         run: |
-          dotnet test --no-build -c Release
+          dotnet test --no-build -c Release \
+            --filter "FullyQualifiedName!~Api.IntegrationTests" \
+            --logger "console;verbosity=minimal"
+
+      - name: Run integration tests
+        working-directory: backend
+        run: |
+          dotnet test --no-build -c Release \
+            --filter "FullyQualifiedName~Api.IntegrationTests" \
+            --logger "console;verbosity=normal"
 
   publish_container:
     needs: build_and_test

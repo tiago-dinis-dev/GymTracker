@@ -45,10 +45,7 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? string.Empty;
-var connectionStringAI = builder.Configuration.GetConnectionString("DefaultConnectionAI") ?? string.Empty;
-
-builder.Services.AddInfrastructure(connectionString, connectionStringAI);
+builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.Configure<Infrastructure.AI.Agent.AgentOptions>(
 builder.Configuration.GetSection(Infrastructure.AI.Agent.AgentOptions.SectionName));
 builder.Services.AddMemoryCache();

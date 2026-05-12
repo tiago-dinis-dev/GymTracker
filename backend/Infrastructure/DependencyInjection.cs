@@ -9,6 +9,7 @@ using Infrastructure.BackgroundJobs;
 using Infrastructure.Persistence;
 using Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Infrastructure;
@@ -16,12 +17,12 @@ namespace Infrastructure;
 public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services,
-        string connectionString, string connectionStringAI)
+        IConfiguration configuration)
     {
-        services.AddDbContext<GymTrackerDbContext>(options =>
-            options.UseNpgsql(connectionString));
-        services.AddDbContext<AIObservationDbContext>(options =>
-            options.UseNpgsql(connectionStringAI));
+        services.AddDbContext<GymTrackerDbContext>((sp, options) =>
+            options.UseNpgsql(sp.GetRequiredService<IConfiguration>().GetConnectionString("DefaultConnection")));
+        services.AddDbContext<AIObservationDbContext>((sp, options) =>
+            options.UseNpgsql(sp.GetRequiredService<IConfiguration>().GetConnectionString("DefaultConnectionAI")));
 
         services.AddHostedService<WorkoutAutoCompletionService>();
         services.AddHostedService<AIObservationBackgroundService>();
